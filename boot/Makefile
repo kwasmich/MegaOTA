@@ -1,0 +1,99 @@
+MCU = atmega328p
+MCU_DUDE = atmega328p
+OBJCOPY = avr-objcopy
+CC = avr-gcc
+AVRSIZE = avr-size
+
+CFLAGS = -Wall -Wno-main -Os -mmcu=$(MCU) -DF_CPU=16000000UL -I../shared/
+LDFLAGS = -mrelax
+
+# strip dead code
+CFLAGS += -ffunction-sections -fdata-sections
+LDFLAGS += -Wl,--gc-sections -Wl,--print-gc-sections \
+						     -Wl,--undefined=main_version \
+							 -Wl,--undefined=write_version \
+							 -Wl,--undefined=boot_version
+
+# link time optimization requires everything that is supposed to stay being flagged with __attribute__((used))
+# CFLAGS += -flto
+# LDFLAGS += -flto
+
+# skip interrupt vector table
+LDFLAGS += -nostartfiles
+
+
+SOURCES=boot.c\
+		../shared/i2c/i2c.c\
+		../shared/i2c/at24cxx.c\
+		../shared/spi/spi.c\
+		../shared/spi/sst25vfxx.c
+OBJECTS=$(SOURCES:%.c=%.o)
+EXECUTABLE=boot
+
+MAIN_START      = 0x0000
+MAIN_END	    = 0x37ff
+MAIN_OTA_START  = 0x3800
+MAIN_OTA_END    = 0x6fff
+BOOT_OTA_START  = 0x7000
+BOOT_OTA_END    = 0x73ff
+WRITE_OTA_START = 0x7400
+WRITE_OTA_END   = 0x77ff
+WRITE_START     = 0x7800
+WRITE_END       = 0x7bff
+BOOT_START      = 0x7c00
+BOOT_END        = 0x7fff
+
+
+all: $(SOURCES) $(EXECUTABLE).hex
+
+
+$(EXECUTABLE).elf: $(OBJECTS)
+	$(CC) $(CFLAGS) $(LDFLAGS)  -Wl,--section-start=.main=$(MAIN_START) \
+								-Wl,--section-start=.main_guard=$(MAIN_END) \
+								-Wl,--section-start=.main_ota=$(MAIN_OTA_START) \
+								-Wl,--section-start=.main_ota_guard=$(MAIN_OTA_START) \
+								-Wl,--section-start=.write_ota=$(WRITE_OTA_START) \
+								-Wl,--section-start=.write_ota_guard=$(WRITE_OTA_END) \
+								-Wl,--section-start=.boot_ota=$(BOOT_OTA_START) \
+								-Wl,--section-start=.boot_ota_guard=$(BOOT_OTA_END) \
+								-Wl,--section-start=.write=$(WRITE_START) \
+								-Wl,--section-start=.write_guard=$(WRITE_END) \
+								-Wl,--section-start=.text=$(BOOT_START) \
+								-Wl,--section-start=.boot_guard=$(BOOT_END) \
+								-o $@ $^
+
+
+$(EXECUTABLE).hex: $(EXECUTABLE).elf
+	$(OBJCOPY) -O ihex $< $@
+	$(AVRSIZE) $<
+
+
+%.o: %.c
+	$(CC) $(CFLAGS) -o $@ -c $<
+	# $(CC) $(CFLAGS) -S -o $@.s -c $<
+	# $(CC) $(CFLAGS) -E -o $@.pre -c $<
+
+
+flash: all
+	avrdude -c usbtiny -p $(MCU_DUDE) -B 1MHz -U flash:w:$(EXECUTABLE).elf:e -U flash:w:../main/main.elf:e
+
+
+fuse:
+	avrdude -c usbtiny -p $(MCU_DUDE) -B 1MHz -U lfuse:w:0xFF:m -U hfuse:w:0xD4:m -U efuse:w:0xFE:m -U lock:w:0x3F:m
+
+
+dump:
+	avrdude -c usbtiny -p $(MCU_DUDE) -B 1MHz -U flash:r:dump_fash.hex:i
+	# -U eeprom:r:dump_eeprom.hex:i
+
+
+disassembly:
+	avr-objdump -s -m avr5 -D $(EXECUTABLE).hex
+	# avr-objdump -s -m avr5 -D $(EXECUTABLE).hex
+	# avr-objdump -s -m avr5 -D dump_fash.hex
+
+
+clean:
+	rm -f $(OBJECTS)
+	rm -f *.elf
+	rm -f *.hex
