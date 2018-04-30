@@ -9,7 +9,7 @@
 
 #include "config.h"
 #include "macros.h"
-
+#include "update.h"
 
 #ifdef EXTERNAL_MEMORY
 #   if EXTERNAL_MEMORY == EXTERNAL_MEMORY_I2C
@@ -82,20 +82,6 @@
 #endif
 
 #define ADDR_EE_UPDATE (E2END + 1 - sizeof(Update_t))
-
-typedef struct {
-    uint16_t main_crc;
-    uint16_t write_crc;
-    uint16_t boot_crc;
-    uint8_t main_page_count;
-    uint8_t write_page_count;
-    uint8_t boot_page_count;
-    uint8_t lfuse;
-    uint8_t hfuse;
-    uint8_t efuse;
-    uint8_t lock;
-    uint8_t signature[3];
-} __attribute__((packed)) Update_t;
 
 
 
@@ -215,8 +201,8 @@ static uint16_t crc16_update(uint16_t crc, uint8_t a) {
 
 
 static bool isSignatureMatching(const Update_t * const up) {
-    uint32_t sig = (boot_signature_byte_get(0) << 16) bitor (boot_signature_byte_get(2) << 8) bitor boot_signature_byte_get(4);
-    uint32_t usig = (up->signature[0] << 16) bitor (up->signature[1] << 8) bitor up->signature[2];
+    uint32_t sig = ((uint32_t)boot_signature_byte_get(0) << 16) bitor ((uint32_t)boot_signature_byte_get(2) << 8) bitor boot_signature_byte_get(4);
+    uint32_t usig = ((uint32_t)up->signature[0] << 16) bitor ((uint32_t)up->signature[1] << 8) bitor up->signature[2];
     return sig == usig;
 }
 
