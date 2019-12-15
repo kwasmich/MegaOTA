@@ -32,6 +32,12 @@
 #include <stdint.h>
 #include <util/delay.h>
 
+
+#pragma message MACRO_VALUE(NUM_PAGES)
+#pragma message MACRO_VALUE(FLASHEND)
+#pragma message MACRO_VALUE(SPM_PAGESIZE)
+#pragma message MACRO_VALUE(NUM_PAGES2)
+
 #define IN_RANGE(X, Y, Z) (((X) <= (Y)) and ((Y) <= (Z)))
 
 

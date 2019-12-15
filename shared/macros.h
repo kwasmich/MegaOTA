@@ -20,5 +20,8 @@
 #define BIT_CLR( PORT, BIT_FIELD ) PORT &= ~BIT_FIELD
 #define BIT_TGL( PORT, BIT_FIELD ) PORT ^=  BIT_FIELD
 
+#define VALUE_TO_STRING(x) #x
+#define VALUE(x) VALUE_TO_STRING(x)
+#define MACRO_VALUE(var) #var " = "  VALUE(var)
 
 #endif /* macros_h */
