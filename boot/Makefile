@@ -1,10 +1,12 @@
 MCU = atmega328p
 MCU_DUDE = atmega328p
+PROGRAMMER=usbtiny
+#PROGRAMMER=avrispmkII
 OBJCOPY = avr-objcopy
 CC = avr-gcc
 AVRSIZE = avr-size
 
-CFLAGS = -Wall -Wno-main -Os -mmcu=$(MCU) -DF_CPU=16000000UL -I../shared/
+CFLAGS = -Wall -Wno-main -Os -MMD -mmcu=$(MCU) -DF_CPU=16000000UL -I../shared/
 LDFLAGS = -mrelax
 
 # strip dead code
@@ -22,13 +24,14 @@ LDFLAGS += -Wl,--gc-sections -Wl,--print-gc-sections \
 LDFLAGS += -nostartfiles
 
 
-SOURCES=boot.c\
-		../shared/i2c/i2c.c\
-		../shared/i2c/at24cxx.c\
-		../shared/spi/spi.c\
-		../shared/spi/sst25vfxx.c
-OBJECTS=$(SOURCES:%.c=%.o)
-EXECUTABLE=boot
+SOURCES = boot.c\
+		  ../shared/i2c/i2c.c\
+		  ../shared/i2c/at24cxx.c\
+		  ../shared/spi/spi.c\
+		  ../shared/spi/sst25vfxx.c
+OBJECTS = $(SOURCES:%.c=%.o)
+DEPS    = $(SOURCES:%.c=%.d)
+EXECUTABLE = boot
 
 MAIN_START      = 0x0000
 MAIN_OTA_START  = 0x3800
@@ -76,15 +79,16 @@ $(EXECUTABLE).hex: $(EXECUTABLE).elf
 
 
 flash: all
-	avrdude -c usbtiny -p $(MCU_DUDE) -B 1MHz -U flash:w:$(EXECUTABLE).elf:e -U flash:w:../main/main.elf:e
+	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -U flash:w:$(EXECUTABLE).elf:e
+	# -U flash:w:../main/main.elf:e
 
 
 fuse:
-	avrdude -c usbtiny -p $(MCU_DUDE) -B 1MHz -U lfuse:w:0xFF:m -U hfuse:w:0xD4:m -U efuse:w:0xFE:m -U lock:w:0x3F:m
+	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -U lfuse:w:0xFF:m -U hfuse:w:0xD4:m -U efuse:w:0xFC:m -U lock:w:0x3F:m
 
 
 dump:
-	avrdude -c usbtiny -p $(MCU_DUDE) -B 1MHz -U flash:r:dump_fash.hex:i
+	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -U flash:r:dump_fash.hex:i
 	# -U eeprom:r:dump_eeprom.hex:i
 
 
@@ -95,6 +99,9 @@ disassembly:
 
 
 clean:
-	rm -f $(OBJECTS)
+	rm -f $(OBJECTS) $(DEPS)
 	rm -f *.elf
 	rm -f *.hex
+
+
+-include $(DEPS)

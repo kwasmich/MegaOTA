@@ -1,15 +1,16 @@
 //
-//  boot.c
+//  update.c
 //  Blink
 //
-//  Created by Michael Kwasnicki on 2018-02-09.
-//  Copyright © 2018 Michael Kwasnicki. All rights reserved.
+//  Created by Michael Kwasnicki on 2019-12-13.
+//  Copyright © 2019 Michael Kwasnicki. All rights reserved.
 //
 
 
 #include "config.h"
 #include "macros.h"
 #include "update.h"
+#include "../shared/update.h"
 
 #ifdef EXTERNAL_MEMORY
 #   if EXTERNAL_MEMORY == EXTERNAL_MEMORY_I2C
@@ -124,13 +125,8 @@ static uint16_t read_word(uint16_t address) {
 
 
 
-// naked: no entry and exit code (no stack)
-void wdt_init(void) __attribute__((naked)) __attribute__((section(".init3")));
-void main(void) __attribute__((OS_main)) __attribute__((section (".init9")));
-
-
 // bootloader overflow guard
-const uint8_t __attribute__((section(".boot_guard"))) boot_version = 0x42;
+const uint8_t __attribute__((section(".write_guard"))) write_version = 0x47;
 
 
 
@@ -157,21 +153,6 @@ static void update(uint16_t dstAddr, uint16_t srcAddr, uint8_t numPages) {
 }
 
 
-
-void wdt_init(void) {
-    // wdt_reset(); // not doing this should be safe as it will be called in wdt_disable()
-    MCUSR = 0x00;
-    wdt_disable();
-}
-
-
-
-/*
-#define wdt_soft_reset() do { \
-                         wdt_enable(WDTO_15MS); \
-                         while (true); \
-                     } while(0)
-*/
 
 static void wdt_soft_reset() {
     wdt_enable(WDTO_15MS);
@@ -228,7 +209,7 @@ static bool isCRCMatching(uint16_t addr, uint8_t numPages, uint16_t dst_CRC) {
 
 
 
-void main(void) {
+void write() {
     // set all ports to output and low to reduce power consumption
     // DDRB = 0xFF;
     // DDRC = 0x7F;
@@ -238,8 +219,9 @@ void main(void) {
     // PORTD = 0x00;
 
     Update_t up;
-    eeprom_read_block(&up, (void *)ADDR_EE_UPDATE, sizeof(Update_t));
-
+    //eeprom_read_block(&up, (void *)ADDR_EE_UPDATE, sizeof(Update_t));
+    up.main_page_count = 20;
+/*
     if (IN_RANGE(1, up.main_page_count, NUM_MAIN_PAGES) and IN_RANGE(1, up.write_page_count, NUM_WRITE_PAGES)) {
         // there seems to be an update available
 
@@ -277,37 +259,30 @@ void main(void) {
             // crc mismatch
             goto start;
         }
-
+*/
         // update
         // 36
         update(ADDR_MAIN, ADDR_MAIN_OTA, up.main_page_count);
-
+/*
         // 46
         update(ADDR_WRITE, ADDR_WRITE_OTA, up.write_page_count);
 
         eeprom_write_byte((void *)ADDR_EE_UPDATE + offsetof(Update_t, main_page_count), 0);
         eeprom_write_byte((void *)ADDR_EE_UPDATE + offsetof(Update_t, write_page_count), 0);
         eeprom_busy_wait();
-
+*/
         // 24
         wdt_soft_reset();
-    }
+//    }
     
     DDRB = _BV(PB5);
 
-    BIT_TGL(PORTB, _BV(PB5));
-    _delay_ms(500);
-
-    for (uint8_t i = 0; i < 20; i++) {
+    for (uint8_t i = 0; i < 50; i++) {
         BIT_TGL(PORTB, _BV(PB5));
         _delay_ms(50);
     }
 
-    _delay_ms(450);
-    BIT_TGL(PORTB, _BV(PB5));
-    _delay_ms(500);
-
 start:
-    asm("jmp 0x0000");
+    wdt_soft_reset();
 }
 

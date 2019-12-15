@@ -10,5 +10,5 @@
 #undef SPI_EEPROM_24BIT
 
 #define NUM_PAGES       256
-#define NUM_WRITE_PAGES 4
-#define NUM_BOOT_PAGES  4
+#define NUM_WRITE_PAGES 8
+#define NUM_BOOT_PAGES  8

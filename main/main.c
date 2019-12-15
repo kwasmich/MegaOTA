@@ -10,6 +10,7 @@
 #include "config.h"
 #include "macros.h"
 
+#include "update.h"
 
 #include <avr/boot.h>
 #include <avr/eeprom.h>
@@ -22,7 +23,22 @@
 #include <util/delay.h>
 
 
+#include <avr/eeprom.h>
+
+uint8_t eeprom EEMEM = 129;
+
+
+void wdt_init(void) __attribute__((naked)) __attribute__((section(".init3")));
 void main(void) __attribute__ ((OS_main)) __attribute__ ((section (".init9")));
+
+
+
+void wdt_init(void) {
+    wdt_reset(); // not doing this should be safe as it will be called in wdt_disable()
+    MCUSR = 0x00;
+    wdt_disable();
+}
+
 
 
 static void setup(void) {
@@ -43,8 +59,16 @@ static void loop() {
 void main(void) {
     setup();
 
-    do {
+    for (int i = 0; i < 10; i++) {
         loop();
-    } while (true);
+    }
+
+    // write();
+    wdt_enable(WDTO_15MS);
+    while (true);
+
+//    do {
+//        loop();
+//    } while (true);
 }
 

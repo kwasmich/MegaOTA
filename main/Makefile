@@ -1,5 +1,7 @@
 MCU=atmega328p
 MCU_DUDE=atmega328p
+PROGRAMMER=usbtiny
+#PROGRAMMER=avrispmkII
 OBJCOPY=avr-objcopy
 CC=avr-gcc
 AVRSIZE=avr-size
@@ -8,7 +10,10 @@ LDFLAGS=-mrelax
 
 # strip dead code
 CFLAGS+=-ffunction-sections -fdata-sections
-LDFLAGS+=-Wl,--gc-sections -Wl,--print-gc-sections
+LDFLAGS+=-Wl,--gc-sections -Wl,--print-gc-sections \
+						   -Wl,--undefined=main_version \
+						   -Wl,--undefined=write_version \
+						   -Wl,--undefined=boot_version
 
 # link time optimization
 # CFLAGS+=-flto
@@ -17,17 +22,43 @@ LDFLAGS+=-Wl,--gc-sections -Wl,--print-gc-sections
 # skip interrupt vector table
 # LDFLAGS+=-nostartfiles
 
-
-SOURCES=main.c
+SOURCES=main.c update.c
 OBJECTS=$(SOURCES:%.c=%.o)
 EXECUTABLE=main
+
+
+MAIN_START      = 0x0000
+MAIN_OTA_START  = 0x3800
+WRITE_OTA_START = 0x7000
+BOOT_OTA_START  = 0x7400
+WRITE_START     = 0x7800
+BOOT_START      = 0x7c00
+FLASH_END       = 0x8000
+MAIN_END	    = $(shell printf "0x%04x\n" $$(($(MAIN_OTA_START) - 1)))
+MAIN_OTA_END    = $(shell printf "0x%04x\n" $$(($(WRITE_OTA_START) - 1)))
+WRITE_OTA_END   = $(shell printf "0x%04x\n" $$(($(BOOT_OTA_START) - 1)))
+BOOT_OTA_END    = $(shell printf "0x%04x\n" $$(($(WRITE_START) - 1)))
+WRITE_END       = $(shell printf "0x%04x\n" $$(($(BOOT_START) - 1)))
+BOOT_END        = $(shell printf "0x%04x\n" $$(($(FLASH_END) - 1)))
 
 
 all: $(SOURCES) $(EXECUTABLE).hex
 
 
 $(EXECUTABLE).elf: $(OBJECTS)
-	$(CC) $(CFLAGS) $(LDFLAGS)  -o $@ $^
+	$(CC) $(CFLAGS) $(LDFLAGS)  -Wl,--section-start=.text=$(MAIN_START) \
+								-Wl,--section-start=.main_guard=$(MAIN_END) \
+								-Wl,--section-start=.main_ota=$(MAIN_OTA_START) \
+								-Wl,--section-start=.main_ota_guard=$(MAIN_OTA_END) \
+								-Wl,--section-start=.write_ota=$(WRITE_OTA_START) \
+								-Wl,--section-start=.write_ota_guard=$(WRITE_OTA_END) \
+								-Wl,--section-start=.boot_ota=$(BOOT_OTA_START) \
+								-Wl,--section-start=.boot_ota_guard=$(BOOT_OTA_END) \
+								-Wl,--section-start=.write=$(WRITE_START) \
+								-Wl,--section-start=.write_guard=$(WRITE_END) \
+								-Wl,--section-start=.boot=$(BOOT_START) \
+								-Wl,--section-start=.boot_guard=$(BOOT_END) \
+								-o $@ $^
 
 
 $(EXECUTABLE).hex: $(EXECUTABLE).elf
@@ -42,11 +73,11 @@ $(EXECUTABLE).hex: $(EXECUTABLE).elf
 
 
 flash: all
-	avrdude -c usbtiny -p $(MCU_DUDE) -B 250kHz -U flash:w:$(EXECUTABLE).elf:e
+	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 250kHz -U flash:w:$(EXECUTABLE).elf:e -U flash:w:../boot/boot.elf:e
 	
 
 dump:
-	avrdude -c usbtiny -p $(MCU_DUDE) -B 250kHz -U flash:r:dump_fash.hex:i -U eeprom:r:dump_eeprom.hex:i
+	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -U flash:r:dump_fash.hex:i -U eeprom:r:dump_eeprom.hex:i
 
 
 disassembly:
