@@ -37,15 +37,15 @@ MAIN_START      = 0x0000
 MAIN_OTA_START  = 0x3800
 WRITE_OTA_START = 0x7000
 BOOT_OTA_START  = 0x7400
-WRITE_START     = 0x7800
-BOOT_START      = 0x7c00
+BOOT_START      = 0x7800
+WRITE_START     = 0x7c00
 FLASH_END       = 0x8000
 MAIN_END	    = $(shell printf "0x%04x\n" $$(($(MAIN_OTA_START) - 1)))
 MAIN_OTA_END    = $(shell printf "0x%04x\n" $$(($(WRITE_OTA_START) - 1)))
 WRITE_OTA_END   = $(shell printf "0x%04x\n" $$(($(BOOT_OTA_START) - 1)))
-BOOT_OTA_END    = $(shell printf "0x%04x\n" $$(($(WRITE_START) - 1)))
-WRITE_END       = $(shell printf "0x%04x\n" $$(($(BOOT_START) - 1)))
-BOOT_END        = $(shell printf "0x%04x\n" $$(($(FLASH_END) - 1)))
+BOOT_OTA_END    = $(shell printf "0x%04x\n" $$(($(BOOT_START) - 1)))
+BOOT_END        = $(shell printf "0x%04x\n" $$(($(WRITE_START) - 1)))
+WRITE_END       = $(shell printf "0x%04x\n" $$(($(FLASH_END) - 1)))
 
 
 all: $(SOURCES) $(EXECUTABLE).hex
@@ -60,10 +60,10 @@ $(EXECUTABLE).elf: $(OBJECTS)
 								-Wl,--section-start=.write_ota_guard=$(WRITE_OTA_END) \
 								-Wl,--section-start=.boot_ota=$(BOOT_OTA_START) \
 								-Wl,--section-start=.boot_ota_guard=$(BOOT_OTA_END) \
-								-Wl,--section-start=.write=$(WRITE_START) \
-								-Wl,--section-start=.write_guard=$(WRITE_END) \
 								-Wl,--section-start=.text=$(BOOT_START) \
 								-Wl,--section-start=.boot_guard=$(BOOT_END) \
+								-Wl,--section-start=.write=$(WRITE_START) \
+								-Wl,--section-start=.write_guard=$(WRITE_END) \
 								-o $@ $^
 
 
@@ -84,7 +84,7 @@ flash: all
 
 
 fuse:
-	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -U lfuse:w:0xFF:m -U hfuse:w:0xD4:m -U efuse:w:0xFC:m -U lock:w:0x3F:m
+	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -U lfuse:w:0xFF:m -U hfuse:w:0xD2:m -U efuse:w:0xFA:m -U lock:w:0x3F:m
 
 
 dump:

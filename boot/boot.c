@@ -131,8 +131,8 @@ static uint16_t read_word(uint16_t address) {
 
 
 // naked: no entry and exit code (no stack)
-void wdt_init(void) __attribute__((naked)) __attribute__((section(".init3")));
-void main(void) __attribute__((OS_main)) __attribute__((section (".init9")));
+void wdt_init(void) __attribute__((naked, section(".init3")));
+void main(void) __attribute__((OS_main, section (".init9")));
 
 
 // bootloader overflow guard
@@ -242,7 +242,7 @@ void main(void) {
     // PORTB = 0x00;
     // PORTC = 0x00;
     // PORTD = 0x00;
-
+/*
     Update_t up;
     eeprom_read_block(&up, (void *)ADDR_EE_UPDATE, sizeof(Update_t));
 
@@ -298,7 +298,7 @@ void main(void) {
         // 24
         wdt_soft_reset();
     }
-    
+*/
     DDRB = _BV(PB5);
 
     BIT_TGL(PORTB, _BV(PB5));

@@ -126,7 +126,7 @@ static uint16_t read_word(uint16_t address) {
 
 
 // bootloader overflow guard
-const uint8_t __attribute__((section(".write_guard"))) write_version = 0x47;
+//const uint8_t __attribute__((section(".write_guard"))) write_version = 0x47;
 
 
 
