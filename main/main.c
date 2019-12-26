@@ -12,6 +12,7 @@
 
 #include "update.h"
 
+#include "ihex/ihex.h"
 #include "spi/spi.h"
 #include "uart/uart.h"
 
@@ -46,7 +47,7 @@ void main(void) __attribute__((OS_main, section (".init9")));
 static void uart_callback(const uint8_t in_BYTE) {
     //printf("0x%02x %c\n", in_BYTE, in_BYTE);
     //printf("%c", in_BYTE);
-    putchar(in_BYTE);
+    //putchar(in_BYTE);
 //    s_uart_buffer_ready = in_BYTE == '\r' || in_BYTE == '\n';
 //
 //    if (!s_uart_buffer_ready) {
@@ -75,7 +76,31 @@ static void setup() {
 
 
 static void loop() {
-    uart_loop_async();
+    static ihex_state ihex;
+    char c;
+
+    if (uart_getchar_async(&c)) {
+        if (ihex_parse_async(&ihex, c)) {
+            if (ihex.chksum_valid) {
+                puts("\ndone");
+
+                puts("");
+                printf("%02x = %d\n", ihex.len, ihex.len);
+                printf("%04x = %d\n", ihex.offset, ihex.offset);
+                printf("%02x = %d\n", ihex.type, ihex.type);
+
+                for (uint8_t i = 0; i < ihex.len; i++) {
+                    printf("%02d: 0x%0x\n", i, ihex.data[i]);
+                }
+
+                printf("%02x = %d\n", ihex.chksum, ihex.chksum);
+                printf("%02x = %d\n", ihex.chksum_valid, ihex.chksum_valid);
+                ihex_parse_async(&ihex, ':');
+            } else {
+                puts("error!");
+            }
+        }
+    }
 
 //    BIT_SET(PORTB, _BV(PB5));
 //    _delay_ms(10);

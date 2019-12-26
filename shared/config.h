@@ -12,6 +12,8 @@
 #define NUM_BOOT_PAGES  8
 
 
+//#define IHEX_DATA_MAX 32
+
 #undef  SPI_EEPROM_24BIT
 //#define SPI_STDOUT
 
