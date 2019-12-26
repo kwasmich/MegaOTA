@@ -65,6 +65,11 @@ bool ihex_parse_async(ihex_state * const in_out_state, const char in_C) {
             in_out_state->type <<= 4;
             in_out_state->type += parse_nibble(in_C);
             in_out_state->_state++;
+
+            if (in_out_state->type == 1) {
+                in_out_state->_state++;
+            }
+
             break;
 
         case 9:
