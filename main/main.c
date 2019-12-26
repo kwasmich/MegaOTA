@@ -12,6 +12,11 @@
 
 #include "update.h"
 
+#include "spi/spi.h"
+#include "uart/uart.h"
+
+
+
 #include <avr/boot.h>
 #include <avr/eeprom.h>
 #include <avr/interrupt.h>
@@ -20,6 +25,7 @@
 #include <iso646.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <util/delay.h>
 
 
@@ -32,24 +38,60 @@ void main(void) __attribute__((OS_main, section (".init9")));
 
 
 
+//volatile static uint8_t s_uart_buffer[64];
+//volatile static uint8_t s_uart_buffer_fill = 0;
+//volatile static bool s_uart_buffer_ready = false;
+
+
+static void uart_callback(const uint8_t in_BYTE) {
+    //printf("0x%02x %c\n", in_BYTE, in_BYTE);
+    //printf("%c", in_BYTE);
+    putchar(in_BYTE);
+//    s_uart_buffer_ready = in_BYTE == '\r' || in_BYTE == '\n';
+//
+//    if (!s_uart_buffer_ready) {
+//        if (s_uart_buffer_fill < 62) {
+//            s_uart_buffer[s_uart_buffer_fill] = in_BYTE;
+//            s_uart_buffer_fill++;
+//            s_uart_buffer[s_uart_buffer_fill] = 0;
+//        } else {
+//            puts("Buffer overflow!");
+//            s_uart_buffer_fill = 0;
+//            s_uart_buffer[0] = 0;
+//        }
+//    }
+}
+
+
+
 static void setup() {
     DDRB = _BV(PB5);
 
-    for (int i = 0; i < 10; i++) {
-        BIT_SET( PORTB, _BV(PB5));
-        _delay_ms(10);
-        BIT_CLR( PORTB, _BV(PB5));
-        _delay_ms(490);
-    }
+    spi_init();
+    uart_init_async(&uart_callback, 0x00);
+    sei();
 }
 
 
 
 static void loop() {
-    BIT_SET( PORTB, _BV(PB5));
-    _delay_ms(10);
-    BIT_CLR( PORTB, _BV(PB5));
-    _delay_ms(1990);
+    uart_loop_async();
+
+//    BIT_SET(PORTB, _BV(PB5));
+//    _delay_ms(10);
+//    BIT_CLR(PORTB, _BV(PB5));
+//    _delay_ms(1990);
+
+    // puts("blink");
+
+//    if (s_uart_buffer_ready) {
+//        cli();
+//        puts(s_uart_buffer);
+//        s_uart_buffer_fill = 0;
+//        s_uart_buffer[0] = 0;
+//        s_uart_buffer_ready = false;
+//        sei();
+//    }
 }
 
 
@@ -62,17 +104,14 @@ void main(void) {
     // PORTB = 0x00;
     // PORTC = 0x00;
     // PORTD = 0x00;
+
     setup();
 
-    for (int i = 0; i < 5; i++) {
+    do {
         loop();
-    }
+    } while (true);
 
 //    write();
-    wdt_enable(WDTO_15MS);
-    while (true);
-
-//    do {
-//        loop();
-//    } while (true);
+//    wdt_enable(WDTO_15MS);
+//    while (true);
 }

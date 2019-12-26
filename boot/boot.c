@@ -280,19 +280,19 @@ void main() {
         wdt_soft_reset();
     }
 
-    DDRB = _BV(PB5);
-
-    BIT_TGL(PORTB, _BV(PB5));
-    _delay_ms(500);
-
-    for (uint8_t i = 0; i < 20; i++) {
-        BIT_TGL(PORTB, _BV(PB5));
-        _delay_ms(50);
-    }
-
-    _delay_ms(450);
-    BIT_TGL(PORTB, _BV(PB5));
-    _delay_ms(500);
+//    DDRB = _BV(PB5);
+//
+//    BIT_TGL(PORTB, _BV(PB5));
+//    _delay_ms(500);
+//
+//    for (uint8_t i = 0; i < 20; i++) {
+//        BIT_TGL(PORTB, _BV(PB5));
+//        _delay_ms(50);
+//    }
+//
+//    _delay_ms(450);
+//    BIT_TGL(PORTB, _BV(PB5));
+//    _delay_ms(500);
 
 start:
     asm("jmp 0x0000");

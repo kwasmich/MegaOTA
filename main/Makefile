@@ -33,6 +33,11 @@ dump:
 	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -U flash:r:dump_fash.hex:i -U eeprom:r:dump_eeprom.hex:i
 
 
+serial:
+	minicom -c on -D $(PORT)
+
+
+
 disassembly:
 	avr-objdump -s -m avr5 -D $(EXECUTABLE).hex
 	# avr-objdump -s -m avr5 -D $(EXECUTABLE).hex

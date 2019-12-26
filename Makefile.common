@@ -5,6 +5,8 @@ PROGRAMMER=usbtiny
 OBJCOPY = avr-objcopy
 CC = avr-gcc
 AVRSIZE = avr-size
+PORT=$(find /dev/cu.usbserial-14*)
+
 
 MAIN_START      = 0x0000
 MAIN_OTA_START  = 0x3800
