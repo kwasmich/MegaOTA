@@ -91,7 +91,7 @@
 
 
 
-static uint8_t read_byte(uint16_t address) {
+static uint8_t read_byte(uint16_t const address) {
     uint8_t val;
 #ifdef EXTERNAL_MEMORY
 #   if EXTERNAL_MEMORY == EXTERNAL_MEMORY_I2C
@@ -109,7 +109,7 @@ static uint8_t read_byte(uint16_t address) {
 
 
 
-static uint16_t read_word(uint16_t address) {
+static uint16_t read_word(uint16_t const address) {
     uint16_t val;
 #ifdef EXTERNAL_MEMORY
 #   if EXTERNAL_MEMORY == EXTERNAL_MEMORY_I2C
@@ -135,12 +135,8 @@ void wdt_init(void) __attribute__((naked, section(".init3")));
 void main(void) __attribute__((OS_main, section (".init9")));
 
 
-// bootloader overflow guard
-const uint8_t __attribute__((section(".boot_guard"))) boot_version = 0x42;
 
-
-
-static void update(uint16_t dstAddr, uint16_t srcAddr, uint8_t numPages) {
+static void update(uint16_t const dstAddr, uint16_t const srcAddr, uint8_t numPages) {
     eeprom_busy_wait();
 
     do {
@@ -164,20 +160,13 @@ static void update(uint16_t dstAddr, uint16_t srcAddr, uint8_t numPages) {
 
 
 
-void wdt_init(void) {
+void wdt_init() {
     // wdt_reset(); // not doing this should be safe as it will be called in wdt_disable()
     MCUSR = 0x00;
     wdt_disable();
 }
 
 
-
-/*
-#define wdt_soft_reset() do { \
-                         wdt_enable(WDTO_15MS); \
-                         while (true); \
-                     } while(0)
-*/
 
 static void wdt_soft_reset() {
     wdt_enable(WDTO_15MS);
@@ -187,7 +176,7 @@ static void wdt_soft_reset() {
 
 
 // this is smaller than the version from <util/crc16.h>
-static uint16_t crc16_update(uint16_t crc, uint8_t a) {
+static uint16_t crc16_update(uint16_t crc, uint8_t const a) {
     crc ^= a;
 
     for (uint8_t i = 0; i < 8; i++) {
@@ -221,7 +210,7 @@ static bool areFusesMatching(const Update_t * const up) {
 
 
 
-static bool isCRCMatching(uint16_t addr, uint8_t numPages, uint16_t dst_CRC) {
+static bool isCRCMatching(uint16_t const addr, uint8_t const numPages, uint16_t const dst_CRC) {
     uint16_t crc = 0xFFFF;
 
     for (uint16_t i = 0; i < numPages * SPM_PAGESIZE; i++) {
@@ -234,15 +223,7 @@ static bool isCRCMatching(uint16_t addr, uint8_t numPages, uint16_t dst_CRC) {
 
 
 
-void main(void) {
-    // set all ports to output and low to reduce power consumption
-    // DDRB = 0xFF;
-    // DDRC = 0x7F;
-    // DDRD = 0xFF;
-    // PORTB = 0x00;
-    // PORTC = 0x00;
-    // PORTD = 0x00;
-/*
+void main() {
     Update_t up;
     eeprom_read_block(&up, (void *)ADDR_EE_UPDATE, sizeof(Update_t));
 
@@ -298,7 +279,7 @@ void main(void) {
         // 24
         wdt_soft_reset();
     }
-*/
+
     DDRB = _BV(PB5);
 
     BIT_TGL(PORTB, _BV(PB5));
