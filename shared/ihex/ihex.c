@@ -45,7 +45,7 @@ bool ihex_parse_async(ihex_state * const in_out_state, const char in_C) {
             in_out_state->_state++;
 
             if (in_out_state->_state == 3 && in_out_state->len > IHEX_DATA_MAX) {
-                in_out_state->_state = 13;
+                in_out_state->_state = 0;
                 return true;
             }
 
@@ -66,7 +66,7 @@ bool ihex_parse_async(ihex_state * const in_out_state, const char in_C) {
             in_out_state->type += parse_nibble(in_C);
             in_out_state->_state++;
 
-            if (in_out_state->type == 1) {
+            if (in_out_state->_state == 9 && in_out_state->len == 0) {
                 in_out_state->_state++;
             }
 
