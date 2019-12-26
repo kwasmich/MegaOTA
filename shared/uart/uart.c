@@ -39,6 +39,10 @@ static uart_callback_t *uart_callback;
 
 
 ISR(USART_RX_vect) {
+    if (uart_received_flag) {
+        // next byte received before the previous one was consumed :(
+    }
+
     uart_received_data = UDR0;
     uart_received_flag = true;
 }
@@ -137,4 +141,16 @@ void uart_loop_async() {
         uart_received_flag = false;
         uart_callback(uart_received_data);
     }
+}
+
+
+
+bool uart_getchar_async(char * const out_c) {
+    if (uart_received_flag) {
+        uart_received_flag = false;
+        *out_c = uart_received_data;
+        return true;
+    }
+
+    return false;
 }
