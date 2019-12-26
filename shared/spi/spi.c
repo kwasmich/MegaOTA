@@ -3,24 +3,18 @@
 #include "config.h"
 #include "macros.h"
 
-#include <avr/cpufunc.h> 
+#include <avr/cpufunc.h>
 #include <avr/io.h>
+#include <stdio.h>
 
 
 
-#define SPI_DDR DDRB
-#define SPI_PORT PORTB
-#define MOSI PB3
-#define MISO PB4
-#define SCK  PB5
-
-
-
-void spi_init() {
-    BIT_CLR(PRR, _BV(PRSPI));          // enable SPI
-    BIT_SET(SPI_DDR, _BV2(MOSI, SCK)); // define SS#, MOSI and SCK as output (MISO is input automatically)
-    SPCR = _BV2(SPE, MSTR);            // enable SPI, as Master with f/4
-}
+#define SPI_DDR      DDRB
+#define SPI_PORT     PORTB
+#define SPI_MOSI_PIN PB3
+#define SPI_MISO_PIN PB4
+#define SPI_SCK_PIN  PB5
+// #define SPI_STDOUT
 
 
 
@@ -33,9 +27,39 @@ uint8_t spi_exchange(uint8_t data) {
 
 
 
+#ifdef SPI_STDOUT
+static int spi_putc(char c, FILE *stream) {
+    if (c == '\n') {
+        return spi_putc('\r', stream);
+    }
+
+    spi_exchange(c);
+    return c;
+}
+#endif
+
+
+
+void spi_init() {
+    BIT_CLR(PRR, _BV(PRSPI));                                                   // enable SPI
+    BIT_SET(SPI_DDR, _BV2(SPI_MOSI_PIN, SPI_SCK_PIN));                          // define SS#, MOSI and SCK as output (MISO is input automatically)
+    SPCR = _BV2(SPE, MSTR);                                                     // enable SPI, as Master with f/4
+
+#ifdef SPI_STDOUT
+    static FILE spi_stdout = FDEV_SETUP_STREAM(spi_putc, NULL, _FDEV_SETUP_WRITE);
+    stdout = &spi_stdout;
+#endif
+}
+
+
+
+
+
+
+
 /**
- * failed attempt to decrease size 
- * 
+ * failed attempt to decrease size
+ *
 uint8_t spi_read() {
     //SPDR = 0x00;
     //_NOP();
