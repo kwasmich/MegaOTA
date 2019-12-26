@@ -46,7 +46,7 @@ bool ihex_parse_async(ihex_state * const in_out_state, const char in_C) {
 
             if (in_out_state->_state == 3 && in_out_state->len > IHEX_DATA_MAX) {
                 in_out_state->_state = 13;
-                puts("overflow!");
+                return true;
             }
 
             break;
