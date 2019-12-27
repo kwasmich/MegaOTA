@@ -26,11 +26,11 @@ $(EXECUTABLE).eep: $(EXECUTABLE).elf
 
 
 flash: all
-	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -U flash:w:$(EXECUTABLE).elf:e -U flash:w:../boot/boot.elf:e
+	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -U flash:w:$(EXECUTABLE).hex:i -U flash:w:../boot/boot.hex:i
 
 
 dump:
-	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -U flash:r:dump_fash.hex:i -U eeprom:r:dump_eeprom.hex:i
+	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -U flash:r:dump.hex:i -U eeprom:r:dump.eep:i
 
 
 serial:
@@ -46,8 +46,9 @@ disassembly:
 
 clean:
 	rm -f $(OBJECTS) $(DEPS)
-	rm -f *.elf
-	rm -f *.hex
+	rm -f $(EXECUTABLE).eep
+	rm -f $(EXECUTABLE).elf
+	rm -f $(EXECUTABLE).hex
 
 
 -include $(DEPS)

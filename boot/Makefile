@@ -46,8 +46,7 @@ fuse:
 
 
 dump:
-	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -U flash:r:dump_fash.hex:i
-	# -U eeprom:r:dump_eeprom.hex:i
+	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -U flash:r:dump.hex:i -U eeprom:r:dump.eep:i
 
 
 disassembly:

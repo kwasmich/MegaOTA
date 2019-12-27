@@ -26,9 +26,7 @@ static uint8_t parse_nibble(const char c) {
 
 
 
-bool ihex_parse_async(ihex_state * const in_out_state, const char in_C) {
-    // printf("%c", in_C);
-
+bool ihex_parse_async(ihex_state_t * const in_out_state, const char in_C) {
     if (in_C == ':') {
         in_out_state->_state = 1;
         in_out_state->_data_cnt = 0;

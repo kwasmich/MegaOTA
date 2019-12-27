@@ -34,11 +34,11 @@ typedef struct {
     uint8_t  _state;
     uint8_t  _data_cnt;
     bool     _hi;
-} ihex_state;
+} ihex_state_t;
 
 
 
-bool ihex_parse_async(ihex_state * const in_out_state, const char in_C);
+bool ihex_parse_async(ihex_state_t * const in_out_state, const char in_C);
 
 
 

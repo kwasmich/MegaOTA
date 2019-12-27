@@ -132,7 +132,7 @@ static uint16_t read_word(uint16_t const address) {
 
 // naked: no entry and exit code (no stack)
 void wdt_init(void) __attribute__((naked, section(".init3")));
-void main(void) __attribute__((OS_main, section (".init9")));
+void main(void) __attribute__((OS_main, section(".init9")));
 
 
 
