@@ -97,7 +97,7 @@ void uart_init(uint8_t in_OSCCAL) {
 #ifdef UART_STDOUT
     static FILE uart_stdout = FDEV_SETUP_STREAM(uart_putc, NULL, _FDEV_SETUP_WRITE);
     stdout = &uart_stdout;
-    printf("%ld %ld %d\n", UBRRH_VALUE, UBRRL_VALUE, USE_2X);
+    // printf("%ld %ld %d\n", UBRRH_VALUE, UBRRL_VALUE, USE_2X);
 #endif
 
     uart_callback = NULL;
@@ -128,7 +128,7 @@ void uart_init_async(uart_callback_t * const in_UART_CALLBACK, uint8_t in_OSCCAL
 #ifdef UART_STDOUT
     static FILE uart_stdout = FDEV_SETUP_STREAM(uart_putc, NULL, _FDEV_SETUP_WRITE);
     stdout = &uart_stdout;
-    printf("%ld %ld %d\n", UBRRH_VALUE, UBRRL_VALUE, USE_2X);
+    // printf("%ld %ld %d\n", UBRRH_VALUE, UBRRL_VALUE, USE_2X);
 #endif
 
     uart_callback = in_UART_CALLBACK;

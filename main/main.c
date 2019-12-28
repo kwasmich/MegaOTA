@@ -60,22 +60,25 @@ void update_write_page(update_block_t * const update_block) __attribute__((secti
 
 
 void update_write_page(update_block_t * const update_block) {
+    const uint8_t sreg = SREG;
+    cli();
     boot_spm_busy_wait();
     eeprom_busy_wait();
 
     uint16_t dstAddress = update_block->base_address;
     boot_page_erase(dstAddress);
-    boot_spm_busy_wait();      // Wait until the memory is erased.
+    boot_spm_busy_wait();           // Wait until the memory is erased.
 
     for (uint8_t i = 0; i < SPM_PAGESIZE; i += 2) {
         uint16_t val = update_block->data[i] | (update_block->data[i + 1] << 8);
         boot_page_fill(dstAddress + i, val);
     }
 
-    boot_page_write(dstAddress);     // Store buffer in flash page.
-    boot_spm_busy_wait();       // Wait until the memory is written.
+    boot_page_write(dstAddress);    // Store buffer in flash page.
+    boot_spm_busy_wait();           // Wait until the memory is written.
 
     boot_rww_enable();
+    SREG = sreg;
 }
 
 
