@@ -136,15 +136,6 @@ void uart_init_async(uint8_t in_OSCCAL) {
 
 
 
-void uart_loop_async() {
-    if (uart_received_flag) {
-        uart_received_flag = false;
-        uart_callback(uart_received_data);
-    }
-}
-
-
-
 bool uart_getchar_async(char * const out_c) {
     if (uart_received_flag) {
         uart_received_flag = false;
