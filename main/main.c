@@ -32,54 +32,10 @@
 
 
 
-typedef struct {
-    uint16_t base_address;
-    uint8_t data[SPM_PAGESIZE];
-} update_block_t;
 
 
 
-void update_block_add(update_block_t * const update_block, const uint8_t len, uint8_t data[len], const uint16_t in_OFFSET) {
-    const uint16_t base = in_OFFSET & ~(SPM_PAGESIZE - 1UL);
-    const uint8_t offset = in_OFFSET - base;
-    printf("base: %04x\n", base);
-    printf("offset: %04x\n", offset);
 
-    if (base != update_block->base_address) {
-        memset(update_block->data, 0xff, sizeof(update_block->data));
-        update_block->base_address = base;
-    }
-
-    memcpy(&update_block->data[offset], data, len);
-}
-
-
-
-void update_write_page(update_block_t * const update_block) __attribute__((section(".write")));
-
-
-
-void update_write_page(update_block_t * const update_block) {
-    const uint8_t sreg = SREG;
-    cli();
-    boot_spm_busy_wait();
-    eeprom_busy_wait();
-
-    uint16_t dstAddress = update_block->base_address;
-    boot_page_erase(dstAddress);
-    boot_spm_busy_wait();           // Wait until the memory is erased.
-
-    for (uint8_t i = 0; i < SPM_PAGESIZE; i += 2) {
-        uint16_t val = update_block->data[i] | (update_block->data[i + 1] << 8);
-        boot_page_fill(dstAddress + i, val);
-    }
-
-    boot_page_write(dstAddress);    // Store buffer in flash page.
-    boot_spm_busy_wait();           // Wait until the memory is written.
-
-    boot_rww_enable();
-    SREG = sreg;
-}
 
 
 
@@ -91,37 +47,11 @@ void main(void) __attribute__((OS_main, section(".init9")));
 
 
 
-//volatile static uint8_t s_uart_buffer[64];
-//volatile static uint8_t s_uart_buffer_fill = 0;
-//volatile static bool s_uart_buffer_ready = false;
-
-
-static void uart_callback(const uint8_t in_BYTE) {
-    //printf("0x%02x %c\n", in_BYTE, in_BYTE);
-    //printf("%c", in_BYTE);
-    //putchar(in_BYTE);
-//    s_uart_buffer_ready = in_BYTE == '\r' || in_BYTE == '\n';
-//
-//    if (!s_uart_buffer_ready) {
-//        if (s_uart_buffer_fill < 62) {
-//            s_uart_buffer[s_uart_buffer_fill] = in_BYTE;
-//            s_uart_buffer_fill++;
-//            s_uart_buffer[s_uart_buffer_fill] = 0;
-//        } else {
-//            puts("Buffer overflow!");
-//            s_uart_buffer_fill = 0;
-//            s_uart_buffer[0] = 0;
-//        }
-//    }
-}
-
-
-
 static void setup() {
     DDRB = _BV(PB5);
 
     spi_init();
-    uart_init_async(&uart_callback, 0x00);
+    uart_init_async(0x00);
     sei();
 }
 
@@ -129,14 +59,14 @@ static void setup() {
 
 static void loop() {
     static ihex_state_t ihex;
-    static update_block_t ublock;
+    static update_page_t ublock;
     char c;
 
     if (uart_getchar_async(&c)) {
         if (ihex_parse_async(&ihex, c)) {
             if (ihex.chksum_valid) {
                 if (ihex.type == 0x00) {
-                    update_block_add(&ublock, ihex.len, ihex.data, ihex.offset);
+                    update_page_add(&ublock, ihex.len, ihex.data, ihex.offset);
 
                     printf("base: %04x\n", ublock.base_address);
 

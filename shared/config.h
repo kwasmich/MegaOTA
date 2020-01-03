@@ -25,4 +25,6 @@
 
 // UART
 #define UART_BAUD 19200
+#define UART_RX_BUFFER_SIZE 4
+#define UART_TX_BUFFER_SIZE 4
 #define UART_STDOUT

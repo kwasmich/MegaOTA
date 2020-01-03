@@ -22,6 +22,12 @@
 #ifndef UART_BAUD
 #   define UART_BAUD 9600
 #endif
+#ifndef UART_RX_BUFFER_SIZE
+#   define UART_RX_BUFFER_SIZE 16
+#endif
+#ifndef UART_TX_BUFFER_SIZE
+#   define UART_TX_BUFFER_SIZE 16
+#endif
 // #define UART_STDOUT
 
 
@@ -33,8 +39,6 @@
 
 volatile static uint8_t uart_received_data;
 volatile static bool uart_received_flag;
-
-static uart_callback_t *uart_callback;
 
 
 
@@ -99,8 +103,6 @@ void uart_init(uint8_t in_OSCCAL) {
     stdout = &uart_stdout;
     // printf("%ld %ld %d\n", UBRRH_VALUE, UBRRL_VALUE, USE_2X);
 #endif
-
-    uart_callback = NULL;
 }
 
 
@@ -119,7 +121,7 @@ uint8_t uart_getchar() {
 
 
 
-void uart_init_async(uart_callback_t * const in_UART_CALLBACK, uint8_t in_OSCCAL) {
+void uart_init_async(uint8_t in_OSCCAL) {
     uart_calibrate_osc(in_OSCCAL);
 
     UCSR0B = _BV3(RXCIE0, RXEN0, TXEN0);
@@ -130,8 +132,6 @@ void uart_init_async(uart_callback_t * const in_UART_CALLBACK, uint8_t in_OSCCAL
     stdout = &uart_stdout;
     // printf("%ld %ld %d\n", UBRRH_VALUE, UBRRL_VALUE, USE_2X);
 #endif
-
-    uart_callback = in_UART_CALLBACK;
 }
 
 
