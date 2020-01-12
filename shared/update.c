@@ -9,9 +9,7 @@
 #include "update.h"
 
 #include <avr/boot.h>
-#include <avr/eeprom.h>
 #include <avr/interrupt.h>
-//#include <stdio.h>
 #include <string.h>
 
 
@@ -19,8 +17,6 @@
 void update_page_add(update_page_t * const page, const uint8_t len, uint8_t data[static len], const uint16_t in_OFFSET) {
     const uint16_t base = in_OFFSET & ~(SPM_PAGESIZE - 1UL);
     const uint8_t offset = in_OFFSET - base;
-//    printf("base: %04x\n", base);
-//    printf("offset: %04x\n", offset);
 
     if (base != page->base_address) {
         memset(page->data, 0xff, sizeof(page->data));
@@ -39,9 +35,8 @@ void update_write_page(const update_page_t * const page) {
     boot_spm_busy_wait();
     eeprom_busy_wait();
 
-    for (uint8_t i = 0; i < SPM_PAGESIZE; i += 2) {
-        uint16_t val = page->data[i] | (page->data[i + 1] << 8);
-        boot_page_fill(dstAddress + i, val);
+    for (uint8_t i = 0; i < SPM_PAGESIZE / 2; i++) {
+        boot_page_fill(dstAddress + (i * 2), page->word[i]);
     }
 
     boot_page_erase(dstAddress);
