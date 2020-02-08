@@ -20,11 +20,12 @@
 #   define IHEX_DATA_MAX 16
 #endif
 
+#pragma message MACRO_VALUE(IHEX_DATA_MAX)
 
 
 typedef struct {
-    uint8_t  len;
     uint16_t offset;
+    uint8_t  len;
     uint8_t  type;
     uint8_t  data[IHEX_DATA_MAX];
     uint8_t  chksum;

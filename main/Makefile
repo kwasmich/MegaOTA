@@ -16,7 +16,7 @@ $(EXECUTABLE).hex: $(EXECUTABLE).elf
 
 
 $(EXECUTABLE).eep: $(EXECUTABLE).elf
-	$(OBJCOPY) -j .eeprom -O ihex $< $@
+	$(OBJCOPY) -j .eeprom -O ihex --change-section-lma .eeprom=0 $< $@
 
 
 %.o: %.c
@@ -26,11 +26,24 @@ $(EXECUTABLE).eep: $(EXECUTABLE).elf
 
 
 flash: all
-	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -U flash:w:$(EXECUTABLE).hex:i -U flash:w:../boot/boot.hex:i
+	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -U flash:w:$(EXECUTABLE).hex:i
+	# -U flash:w:../boot/boot.hex:i -U eeprom:w:$(EXECUTABLE).eep:i
+	# avrdude -c arduino -P $(PORT) -p $(MCU_DUDE) -b115200 -U flash:w:$(EXECUTABLE).hex:i
+	# -U eeprom:w:$(EXECUTABLE).eep:i
+
+
+fuse:
+	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -U lfuse:r:-:i -U hfuse:r:-:i -U efuse:r:-:i -U lock:r:-:i
+	# avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -U lock:w:0x3F:m
+
+
+erase:
+	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -e
 
 
 dump:
 	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -U flash:r:dump.hex:i -U eeprom:r:dump.eep:i
+	# avrdude -c arduino -P $(PORT) -p $(MCU_DUDE) -B 1MHz -U flash:r:dump.hex:i -U eeprom:r:dump.eep:i
 
 
 serial:

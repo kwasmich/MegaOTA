@@ -17,14 +17,14 @@
 //#define I2C_EEPROM_PAGE_SIZE 128
 
 // Intel HEX
-//#define IHEX_DATA_MAX 32
+#define IHEX_DATA_MAX 32
 
 // SPI
 //#define SPI_STDOUT
 //#define SPI_EEPROM_24BIT
 
 // UART
-#define UART_BAUD 19200
+#define UART_BAUD 57600 // 19200
 #define UART_RX_BUFFER_SIZE 4
 #define UART_TX_BUFFER_SIZE 4
 #define UART_STDOUT

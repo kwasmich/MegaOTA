@@ -10,6 +10,7 @@
 #include "config.h"
 #include "macros.h"
 
+#include "debug.h"
 #include "update.h"
 
 #include "ihex/ihex.h"
@@ -53,6 +54,7 @@ static void setup() {
     spi_init();
     uart_init_async(0x00);
     sei();
+    puts("ready");
 }
 
 
@@ -65,24 +67,40 @@ static void loop() {
     if (uart_getchar_async(&c)) {
         if (ihex_parse_async(&ihex, c)) {
             if (ihex.chksum_valid) {
-                if (ihex.type == 0x00) {
-                    update_page_add(&ublock, ihex.len, ihex.data, ihex.offset);
+                switch (ihex.type) {
+                    case 0x00:
+                        update_page_add(&ublock, ihex.len, ihex.data, ihex.offset);
 
-                    printf("base: %04x\n", ublock.base_address);
+                        printf("base: %04x\n", ublock.base_address);
 
-                    for (int i = 0; i < SPM_PAGESIZE; i++) {
-                        printf("%02x ", ublock.data[i]);
+                        for (int i = 0; i < SPM_PAGESIZE; i++) {
+                            printf("%02x ", ublock.data[i]);
 
-                        if ((i & 0xF) == 0xF) {
-                            puts("");
+                            if ((i & 0xF) == 0xF) {
+                                puts("");
+                            }
                         }
-                    }
-                }
 
-                if (ihex.type == 0x06) {
-                    puts("writing to PROGMEM...");
-                    update_write_page(&ublock);
-                    puts("DONE");
+                        break;
+
+                    case 0x06:
+                        puts("writing to PROGMEM...");
+                        update_write_page(&ublock);
+                        puts("DONE");
+                        break;
+
+                    case 0x07:
+                        debug_dump_mem();
+                        break;
+
+                    case 0x08:
+                        debug_dump_eep();
+                        break;
+
+                    case 0x09:
+                        debug_dump_pgm();
+                        break;
+
                 }
 
                 puts("\ndone");
