@@ -28,3 +28,13 @@
 #define UART_RX_BUFFER_SIZE 4
 #define UART_TX_BUFFER_SIZE 4
 #define UART_STDOUT
+
+// nRF24L01+
+//#define NRF24_CE_PORT  PORTB
+//#define NRF24_CE_PIN   PB1
+//#define NRF24_CSN_PORT PORTB
+//#define NRF24_CSN_PIN  PB2
+//#define NRF24_IRQ_PORT PORTD
+//#define NRF24_IRQ_PIN  PD2
+//#define NRF24_IRQ_INT  INT0
+//#define NRF24_IRQ_VECT INT0_vect

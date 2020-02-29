@@ -26,9 +26,9 @@ $(EXECUTABLE).eep: $(EXECUTABLE).elf
 
 
 flash: all
-	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -U flash:w:$(EXECUTABLE).hex:i
+	# avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -U flash:w:$(EXECUTABLE).hex:i
 	# -U flash:w:../boot/boot.hex:i -U eeprom:w:$(EXECUTABLE).eep:i
-	# avrdude -c arduino -P $(PORT) -p $(MCU_DUDE) -b115200 -U flash:w:$(EXECUTABLE).hex:i
+	avrdude -c arduino -P $(PORT) -p $(MCU_DUDE) -b115200 -U flash:w:$(EXECUTABLE).hex:i
 	# -U eeprom:w:$(EXECUTABLE).eep:i
 
 

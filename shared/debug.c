@@ -61,6 +61,16 @@ void debug_dump_mem() {
     } while (addr < (uint8_t *)RAMEND);
 
     puts(":00000001FF");
+
+    printf("  __data_start: %03X\n", (uintptr_t)&__data_start);
+    printf("    __data_end: %03X\n", (uintptr_t)&__data_end);
+    printf("   __bss_start: %03X\n", (uintptr_t)&__bss_start);
+    printf("     __bss_end: %03X\n", (uintptr_t)&__bss_end);
+    printf("      __brkval: %03X\n", (uintptr_t)__brkval);
+    printf("__noinit_start: %03X\n", (uintptr_t)&__noinit_start);
+    printf("  __noinit_end: %03X\n", (uintptr_t)&__noinit_end);
+    printf("  __heap_start: %03X\n", (uintptr_t)&__heap_start);
+    printf("            SP: %03X\n", SP);
 }
 
 

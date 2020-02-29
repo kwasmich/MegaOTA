@@ -16,6 +16,7 @@
 #include "ihex/ihex.h"
 #include "spi/spi.h"
 #include "uart/uart.h"
+#include "nrf24/nrf24.h"
 
 
 
@@ -55,6 +56,9 @@ static void setup() {
     uart_init_async(0x00);
     sei();
     puts("ready");
+    // nrf24_init(); // lockup
+    spi_exchange(0x33);
+    puts("done");
 }
 
 

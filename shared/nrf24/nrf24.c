@@ -11,6 +11,7 @@
 #include "nrf24_io.h"
 
 #include <iso646.h>
+#include <stdio.h>
 #include <string.h>
 #include <util/delay.h>
 
@@ -28,6 +29,7 @@ nrf24_register_config_u s_nrf24_config;
 
 
 static uint8_t nrf24_get_register_1(const uint8_t in_REGISTER) {
+    puts("2");
     return nrf24_io_command_1(R_REGISTER xor in_REGISTER, 0x00);
 }
 
@@ -140,6 +142,7 @@ void nrf24_tx(uint8_t length, uint8_t pipe, uint8_t payload[static const length]
 
 
 void nrf24_init() {
+    /*
     uint8_t addr[5] = { 0x00, 0x00, 0x5A, 0xC6, 0x39 }; // prefix + addr = 39C65A 0000
 
     nrf24_register_config_u config = { .CRCO = 1, .EN_CRC = 1 };
@@ -171,6 +174,12 @@ void nrf24_init() {
     nrf24_set_register_1(RX_PW_P5, rx_pw.u8);
     nrf24_set_register_1(DYNPD, dynpd.u8);
     nrf24_set_register_1(FEATURE, feature.u8);
+     */
+
+    puts("1");
+    uint8_t u8;
+    u8 = nrf24_get_register_1(CONFIG);
+    printf("%02X\n", u8);
 }
 
 

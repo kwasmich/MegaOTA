@@ -21,17 +21,33 @@
 
 
 
-#define NRF24_CE_PORT  PORTB
-#define NRF24_CE_PIN   PB1
-#define NRF24_CSN_PORT PORTB
-#define NRF24_CSN_PIN  PB2
-#define NRF24_IRQ_PORT PORTD
-#define NRF24_IRQ_PIN  PD2
-#define NRF24_IRQ_INT  INT0
-#define NRF24_IRQ_VECT INT0_vect
+#ifndef NRF24_CE_PORT
+#   define NRF24_CE_PORT  PORTB
+#endif
+#ifndef NRF24_CE_PIN
+#   define NRF24_CE_PIN   PB1
+#endif
+#ifndef NRF24_CSN_PORT
+#   define NRF24_CSN_PORT PORTB
+#endif
+#ifndef NRF24_CSN_PIN
+#   define NRF24_CSN_PIN  PB2
+#endif
+#ifndef NRF24_IRQ_PORT
+#   define NRF24_IRQ_PORT PORTD
+#endif
+#ifndef NRF24_IRQ_PIN
+#   define NRF24_IRQ_PIN  PD2
+#endif
+#ifndef NRF24_IRQ_INT
+#   define NRF24_IRQ_INT  INT0
+#endif
+#ifndef NRF24_IRQ_VECT
+#   define NRF24_IRQ_VECT INT0_vect
+#endif
 
 #define NRF24_T_POR 100                                                         // ms
-#define NRF24_T_CE 11                                                           // µs
+#define NRF24_T_CE 15                                                           // >10 µs
 
 
 
