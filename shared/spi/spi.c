@@ -11,6 +11,7 @@
 
 #define SPI_DDR      DDRB
 #define SPI_PORT     PORTB
+#define SPI_SS_PIN   PB2
 #define SPI_MOSI_PIN PB3
 #define SPI_MISO_PIN PB4
 #define SPI_SCK_PIN  PB5
@@ -42,7 +43,7 @@ static int spi_putc(char c, FILE *stream) {
 
 void spi_init() {
     BIT_CLR(PRR, _BV(PRSPI));                                                   // enable SPI
-    BIT_SET(SPI_DDR, _BV2(SPI_MOSI_PIN, SPI_SCK_PIN));                          // define SS#, MOSI and SCK as output (MISO is input automatically)
+    BIT_SET(SPI_DDR, _BV3(SPI_SS_PIN, SPI_MOSI_PIN, SPI_SCK_PIN));              // define SS#, MOSI and SCK as output (MISO is input automatically)
     SPCR = _BV2(SPE, MSTR);                                                     // enable SPI, as Master with f/4
 
 #ifdef SPI_STDOUT
