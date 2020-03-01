@@ -9,8 +9,14 @@
 #ifndef nrf24_h
 #define nrf24_h
 
+#include <stdbool.h>
+#include <stdint.h>
 
 
+void nrf24_rx_start();
+void nrf24_rx_stop();
+void nrf24_tx(const uint8_t in_LENGTH, const uint8_t in_PAYLOAD[static const in_LENGTH]);
+bool nrf24_rx(uint8_t *length, uint8_t payload[static const 32]);
 void nrf24_init(void);
 void nrf24_loop(void);
 void nrf24_debug(void);

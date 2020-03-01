@@ -16,6 +16,7 @@
 #include <avr/interrupt.h>
 #include <avr/io.h>
 #include <iso646.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <util/delay.h>
 
@@ -68,6 +69,17 @@ ISR(NRF24_IRQ_VECT) {
 
 
 void nrf24_io_command(const uint8_t in_COMMAND) {
+    switch (in_COMMAND) {
+        case FLUSH_TX:
+        case FLUSH_RX:
+        case REUSE_TX_PL:
+        case NOP:
+            break;
+        default:
+            puts("nrf24_io_command error");
+            return;
+    }
+
     BIT_CLR(NRF24_CSN_PORT, _BV(NRF24_CSN_PIN));
     s_nrf24_io_status.u8 = spi_exchange(in_COMMAND);
     BIT_SET(NRF24_CSN_PORT, _BV(NRF24_CSN_PIN));
@@ -76,6 +88,17 @@ void nrf24_io_command(const uint8_t in_COMMAND) {
 
 
 uint8_t nrf24_io_command_1(const uint8_t in_COMMAND, uint8_t in_DATA) {
+    switch (in_COMMAND) {
+        case FLUSH_TX:
+        case FLUSH_RX:
+        case REUSE_TX_PL:
+        case NOP:
+            puts("nrf24_io_command_1 error");
+            return 0;
+        default:
+            break;
+    }
+
     BIT_CLR(NRF24_CSN_PORT, _BV(NRF24_CSN_PIN));
     s_nrf24_io_status.u8 = spi_exchange(in_COMMAND);
     in_DATA = spi_exchange(in_DATA);
@@ -86,6 +109,18 @@ uint8_t nrf24_io_command_1(const uint8_t in_COMMAND, uint8_t in_DATA) {
 
 
 void nrf24_io_command_n(const uint8_t in_COMMAND, const uint8_t in_LENGTH, uint8_t in_out_payload[static const in_LENGTH]) {
+    switch (in_COMMAND) {
+        case R_RX_PL_WID:
+        case FLUSH_TX:
+        case FLUSH_RX:
+        case REUSE_TX_PL:
+        case NOP:
+            puts("nrf24_io_command_n error");
+            return;
+        default:
+            break;
+    }
+
     BIT_CLR(NRF24_CSN_PORT, _BV(NRF24_CSN_PIN));
     s_nrf24_io_status.u8 = spi_exchange(in_COMMAND);
 
@@ -141,5 +176,6 @@ void nrf24_io_init() {
     BIT_CLR(DDRD, _BV(NRF24_IRQ_PIN));                                          // IRQ is input
     BIT_SET(DDRB, _BV2(NRF24_CE_PIN, NRF24_CSN_PIN));                           // CE and CSN are outputs
     BIT_SET(PORTB, _BV(NRF24_CSN_PIN));                                         // keep CSN up unless we are sending data to nRF
+    BIT_CLR(PORTB, _BV(NRF24_CE_PIN));                                          // keep CE low unless we want to use the radio
     _delay_ms(NRF24_T_POR);                                                     // wait for nRF24L01+ Oscillator to sattle (T_POR Power on reset)
 }

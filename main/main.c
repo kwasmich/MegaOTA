@@ -65,6 +65,7 @@ static void loop() {
     static ihex_state_t ihex;
     static update_page_t ublock;
     char c;
+    static const uint8_t payload[32] = "Hello World!";
 
     if (uart_getchar_async(&c)) {
         if (ihex_parse_async(&ihex, c)) {
@@ -105,6 +106,8 @@ static void loop() {
 
                     case 0x0A:
                         nrf24_debug();
+                        nrf24_tx(12, payload);
+                        nrf24_debug();
                         break;
                 }
 
@@ -124,6 +127,36 @@ static void loop() {
             } else {
                 puts("error!");
             }
+        }
+        if (c == 'r') {
+            puts("start listening!");
+            nrf24_rx_start();
+        }
+        if (c == 's') {
+            nrf24_rx_stop();
+            puts("stopped listening!");
+        }
+        if (c == 'd') {
+            nrf24_debug();
+        }
+        if (c == 't') {
+            nrf24_tx(12, payload);
+        }
+        if (c == 'z') {
+            BIT_SET(PORTB, _BV(PB1));
+            _delay_us(15);
+            BIT_CLR(PORTB, _BV(PB1));
+        }
+        if (c == 'u') {
+            BIT_SET(PORTB, _BV(PB1));
+        }
+        if (c == 'i') {
+            BIT_CLR(PORTB, _BV(PB1));
+        }
+        if (c == 'a') {
+            BIT_CLR(PORTB, _BV(PB2));
+            spi_exchange(0xA0);
+            BIT_SET(PORTB, _BV(PB2));
         }
     }
 

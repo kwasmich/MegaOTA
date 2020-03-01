@@ -17,7 +17,7 @@
 
 
 #ifndef IHEX_DATA_MAX
-#   define IHEX_DATA_MAX 16
+#   define IHEX_DATA_MAX 32
 #endif
 
 #pragma message MACRO_VALUE(IHEX_DATA_MAX)
