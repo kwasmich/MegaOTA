@@ -21,9 +21,9 @@
 #define SPI_EEPROM_OP_READ_ID                       0xAB
 #define SPI_EEPROM_OP_AAI_PROGRAM                   0xAF
 
-#define SPI_DDR DDRB
+#define SPI_DDR  DDRB
 #define SPI_PORT PORTB
-#define SS   PB2
+#define SPI_SS   PB2
 
 #ifndef SPI_EEPROM_24BIT
 #   define SPI_EEPROM_SECTOR_ADDRESS_MASK 0xF000
@@ -36,13 +36,13 @@
 
 
 inline static void spi_start() {
-    BIT_CLR(SPI_PORT, _BV(SS));
+    BIT_CLR(SPI_PORT, _BV(SPI_SS));
 }
 
 
 
 inline static void spi_stop() {
-    BIT_SET(SPI_PORT, _BV(SS));
+    BIT_SET(SPI_PORT, _BV(SPI_SS));
 }
 
 
@@ -86,8 +86,8 @@ inline static void spi_eeprom_wait_until_ready() {
 
 
 void spi_eeprom_init() {
-    BIT_SET(SPI_DDR, _BV(SS));  // define SS#, MOSI and SCK as output (MISO is input automatically)
-    BIT_SET(SPI_PORT, _BV(SS)); // keep SS# high and pull it low if the slave is selected
+    BIT_SET(SPI_DDR, _BV(SPI_SS));  // define SS#, MOSI and SCK as output (MISO is input automatically)
+    BIT_SET(SPI_PORT, _BV(SPI_SS)); // keep SS# high and pull it low if the slave is selected
 }
 
 
