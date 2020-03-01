@@ -56,8 +56,7 @@ static void setup() {
     uart_init_async(0x00);
     sei();
     puts("ready");
-    // nrf24_init(); // lockup
-    spi_exchange(0x33);
+    nrf24_init();
     puts("done");
 }
 

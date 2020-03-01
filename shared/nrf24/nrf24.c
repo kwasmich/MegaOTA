@@ -29,7 +29,6 @@ nrf24_register_config_u s_nrf24_config;
 
 
 static uint8_t nrf24_get_register_1(const uint8_t in_REGISTER) {
-    puts("2");
     return nrf24_io_command_1(R_REGISTER xor in_REGISTER, 0x00);
 }
 
@@ -142,8 +141,9 @@ void nrf24_tx(uint8_t length, uint8_t pipe, uint8_t payload[static const length]
 
 
 void nrf24_init() {
-    /*
     uint8_t addr[5] = { 0x00, 0x00, 0x5A, 0xC6, 0x39 }; // prefix + addr = 39C65A 0000
+
+    /*
 
     nrf24_register_config_u config = { .CRCO = 1, .EN_CRC = 1 };
     // nrf24_register_en_aa_u en_aa = { .ENAA_P0 = 1, .ENAA_P1 = 1, .ENAA_P2 = 1, .ENAA_P3 = 1, .ENAA_P4 = 1, .ENAA_P5 = 1, };
@@ -176,10 +176,25 @@ void nrf24_init() {
     nrf24_set_register_1(FEATURE, feature.u8);
      */
 
-    puts("1");
-    uint8_t u8;
-    u8 = nrf24_get_register_1(CONFIG);
-    printf("%02X\n", u8);
+    nrf24_set_register_n(RX_ADDR_P0, 5, addr);
+    nrf24_set_register_n(RX_ADDR_P1, 5, addr);
+    nrf24_set_register_n(TX_ADDR, 5, addr);
+
+    static const char* name[] = { "CONFIG", "EN_AA", "EN_RXADDR", "SETUP_AW", "SETUP_RETR", "RF_CH", "RF_SETUP", "STATUS", "OBSERVE_TX", "RPD", "RX_ADDR_P0", "RX_ADDR_P1", "RX_ADDR_P2", "RX_ADDR_P3", "RX_ADDR_P4", "RX_ADDR_P5", "TX_ADDR", "RX_PW_P0", "RX_PW_P1", "RX_PW_P2", "RX_PW_P3", "RX_PW_P4 ", "RX_PW_P5", "FIFO_STATUS", "(reserved)", "(reserved)", "(reserved)", "(reserved)", "DYNPD", "FEATURE"};
+    static const uint32_t len = 0x10C00;
+
+    for (uint8_t i = 0; i <= FEATURE; i++) {
+        uint8_t u8;
+        uint8_t u85[5];
+
+        if ((len >> i) & 0x1) {
+            nrf24_get_register_n(i, 5, u85);
+            printf("%11s: 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n", name[i], u85[0], u85[1], u85[2], u85[3], u85[4]);
+        } else {
+            u8 = nrf24_get_register_1(i);
+            printf("%11s: 0x%02X\n", name[i], u8);
+        }
+    }
 }
 
 
