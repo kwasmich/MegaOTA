@@ -29,3 +29,6 @@ dump eeprom
 
 dump flash
 :00000009F7
+
+dump nRF24L01+
+:0000000AF6

@@ -53,11 +53,10 @@ static void setup() {
     DDRB = _BV(PB5);
 
     spi_init();
+    nrf24_init();
     uart_init_async(0x00);
     sei();
     puts("ready");
-    nrf24_init();
-    puts("done");
 }
 
 
@@ -104,6 +103,9 @@ static void loop() {
                         debug_dump_pgm();
                         break;
 
+                    case 0x0A:
+                        nrf24_debug();
+                        break;
                 }
 
                 puts("\ndone");

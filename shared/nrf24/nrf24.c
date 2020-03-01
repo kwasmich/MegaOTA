@@ -142,9 +142,6 @@ void nrf24_tx(uint8_t length, uint8_t pipe, uint8_t payload[static const length]
 
 void nrf24_init() {
     uint8_t addr[5] = { 0x00, 0x00, 0x5A, 0xC6, 0x39 }; // prefix + addr = 39C65A 0000
-
-    /*
-
     nrf24_register_config_u config = { .CRCO = 1, .EN_CRC = 1 };
     // nrf24_register_en_aa_u en_aa = { .ENAA_P0 = 1, .ENAA_P1 = 1, .ENAA_P2 = 1, .ENAA_P3 = 1, .ENAA_P4 = 1, .ENAA_P5 = 1, };
     nrf24_register_en_rxaddr_u en_rxaddr = { .ERX_P0 = 1 };
@@ -174,16 +171,29 @@ void nrf24_init() {
     nrf24_set_register_1(RX_PW_P5, rx_pw.u8);
     nrf24_set_register_1(DYNPD, dynpd.u8);
     nrf24_set_register_1(FEATURE, feature.u8);
-     */
+}
 
-    nrf24_set_register_n(RX_ADDR_P0, 5, addr);
-    nrf24_set_register_n(RX_ADDR_P1, 5, addr);
-    nrf24_set_register_n(TX_ADDR, 5, addr);
 
-    static const char* name[] = { "CONFIG", "EN_AA", "EN_RXADDR", "SETUP_AW", "SETUP_RETR", "RF_CH", "RF_SETUP", "STATUS", "OBSERVE_TX", "RPD", "RX_ADDR_P0", "RX_ADDR_P1", "RX_ADDR_P2", "RX_ADDR_P3", "RX_ADDR_P4", "RX_ADDR_P5", "TX_ADDR", "RX_PW_P0", "RX_PW_P1", "RX_PW_P2", "RX_PW_P3", "RX_PW_P4 ", "RX_PW_P5", "FIFO_STATUS", "(reserved)", "(reserved)", "(reserved)", "(reserved)", "DYNPD", "FEATURE"};
+
+void nrf24_loop() {
+    if (s_nrf24_io_irq) {
+        
+    }
+}
+
+
+
+void nrf24_debug() {
+    static const char* name[] = { "CONFIG", "EN_AA", "EN_RXADDR", "SETUP_AW",
+        "SETUP_RETR", "RF_CH", "RF_SETUP", "STATUS", "OBSERVE_TX", "RPD",
+        "RX_ADDR_P0", "RX_ADDR_P1", "RX_ADDR_P2", "RX_ADDR_P3", "RX_ADDR_P4",
+        "RX_ADDR_P5", "TX_ADDR", "RX_PW_P0", "RX_PW_P1", "RX_PW_P2", "RX_PW_P3",
+        "RX_PW_P4 ", "RX_PW_P5", "FIFO_STATUS", "(reserved)", "(reserved)",
+        "(reserved)", "(reserved)", "DYNPD", "FEATURE", "(reserved)",
+        "(reserved)"};
     static const uint32_t len = 0x10C00;
 
-    for (uint8_t i = 0; i <= FEATURE; i++) {
+    for (uint8_t i = 0; i < 0x20; i++) {
         uint8_t u8;
         uint8_t u85[5];
 
@@ -196,13 +206,3 @@ void nrf24_init() {
         }
     }
 }
-
-
-
-void nrf24_loop() {
-    if (s_nrf24_io_irq) {
-        
-    }
-}
-
-

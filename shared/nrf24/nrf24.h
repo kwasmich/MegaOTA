@@ -13,6 +13,7 @@
 
 void nrf24_init(void);
 void nrf24_loop(void);
+void nrf24_debug(void);
 
 
 
