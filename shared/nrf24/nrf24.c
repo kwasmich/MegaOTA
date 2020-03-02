@@ -100,7 +100,7 @@ static void reset_plos_cnt() {
 
 
 
-static void nrf24_clear_interrupts() {
+void nrf24_clear_interrupts() {
     nrf24_register_status_u status = { .MAX_RT = 1, .TX_DS = 1, .RX_DR = 1 };
     nrf24_io_command_1(W_REGISTER xor STATUS, status.u8);
 }
@@ -154,7 +154,7 @@ void nrf24_tx(const uint8_t in_LENGTH, const uint8_t in_PAYLOAD[static const in_
 
     // to
     // payload
-    nrf24_io_command_n(W_TX_PAYLOAD, in_LENGTH, payload);
+    nrf24_io_command_n(W_TX_PAYLOAD_NOACK, in_LENGTH, payload);
 
     // while tx fifo
     // nrf24_io_ce_pulse();
@@ -204,6 +204,7 @@ void nrf24_init() {
 
     nrf24_io_command(FLUSH_RX);
     nrf24_io_command(FLUSH_TX);
+    nrf24_clear_interrupts();
     // pwr_up();
 }
 
@@ -211,7 +212,7 @@ void nrf24_init() {
 
 void nrf24_loop() {
     if (s_nrf24_io_irq) {
-        
+        s_nrf24_io_irq = false;
     }
 }
 

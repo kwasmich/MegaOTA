@@ -24,9 +24,9 @@ void nrf24_io_init(void);
 void nrf24_io_command(const uint8_t in_COMMAND);
 uint8_t nrf24_io_command_1(const uint8_t in_COMMAND, uint8_t in_DATA);
 void nrf24_io_command_n(const uint8_t in_COMMAND, const uint8_t in_LENGTH, uint8_t in_out_payload[static const in_LENGTH]);
-void nrf24_io_ce_pulse();
-void nrf24_io_ce_hi();
-void nrf24_io_ce_lo();
+void nrf24_io_ce_pulse(void);
+void nrf24_io_ce_hi(void);
+void nrf24_io_ce_lo(void);
 
 
 #endif /* nrf24_io_h */

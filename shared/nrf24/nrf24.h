@@ -20,6 +20,7 @@ bool nrf24_rx(uint8_t *length, uint8_t payload[static const 32]);
 void nrf24_init(void);
 void nrf24_loop(void);
 void nrf24_debug(void);
+void nrf24_clear_interrupts(void);
 
 
 

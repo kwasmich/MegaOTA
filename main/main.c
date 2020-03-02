@@ -153,6 +153,9 @@ static void loop() {
         if (c == 'i') {
             BIT_CLR(PORTB, _BV(PB1));
         }
+        if (c == 'q') {
+            nrf24_clear_interrupts();
+        }
         if (c == 'a') {
             BIT_CLR(PORTB, _BV(PB2));
             spi_exchange(0xA0);
