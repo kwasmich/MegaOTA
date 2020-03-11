@@ -52,23 +52,20 @@
 
 
 
-nrf24_register_status_u s_nrf24_io_status;
-volatile bool s_nrf24_io_irq = false;
+volatile nrf24_register_status_u s_nrf24_io_status;
+volatile nrf24_register_status_u s_nrf24_io_irq_status = {};
 
 
 
 // try ISR_NAKED with all its consequences
 ISR(NRF24_IRQ_VECT) {
-    if (s_nrf24_io_irq) {
-        // packet received before the previous one was consumed :(
-    }
-
-    s_nrf24_io_irq = true;
+    nrf24_register_status_u status = { .MAX_RT = 1, .TX_DS = 1, .RX_DR = 1 };
+    s_nrf24_io_irq_status.u8 |= nrf24_io_command_1(W_REGISTER xor STATUS, status.u8);
 }
 
 
 
-void nrf24_io_command(const uint8_t in_COMMAND) {
+void nrf24_io_command(uint8_t in_COMMAND) {
     switch (in_COMMAND) {
         case FLUSH_TX:
         case FLUSH_RX:
@@ -87,7 +84,7 @@ void nrf24_io_command(const uint8_t in_COMMAND) {
 
 
 
-uint8_t nrf24_io_command_1(const uint8_t in_COMMAND, uint8_t in_DATA) {
+uint8_t nrf24_io_command_1(uint8_t in_COMMAND, uint8_t in_DATA) {
     switch (in_COMMAND) {
         case FLUSH_TX:
         case FLUSH_RX:
@@ -101,14 +98,14 @@ uint8_t nrf24_io_command_1(const uint8_t in_COMMAND, uint8_t in_DATA) {
 
     BIT_CLR(NRF24_CSN_PORT, _BV(NRF24_CSN_PIN));
     s_nrf24_io_status.u8 = spi_exchange(in_COMMAND);
-    in_DATA = spi_exchange(in_DATA);
+    uint8_t out_data = spi_exchange(in_DATA);
     BIT_SET(NRF24_CSN_PORT, _BV(NRF24_CSN_PIN));
-    return in_DATA;
+    return out_data;
 }
 
 
 
-void nrf24_io_command_n(const uint8_t in_COMMAND, const uint8_t in_LENGTH, uint8_t in_out_payload[static const in_LENGTH]) {
+void nrf24_io_command_n(uint8_t in_COMMAND, uint8_t in_LENGTH, uint8_t in_out_payload[static const in_LENGTH]) {
     switch (in_COMMAND) {
         case R_RX_PL_WID:
         case FLUSH_TX:
@@ -178,4 +175,7 @@ void nrf24_io_init() {
     BIT_SET(PORTB, _BV(NRF24_CSN_PIN));                                         // keep CSN up unless we are sending data to nRF
     BIT_CLR(PORTB, _BV(NRF24_CE_PIN));                                          // keep CE low unless we want to use the radio
     _delay_ms(NRF24_T_POR);                                                     // wait for nRF24L01+ Oscillator to sattle (T_POR Power on reset)
+
+    // BIT_SET(DDRD, _BV(PD3));
+    // BIT_CLR(PORTD, _BV(PD3));
 }

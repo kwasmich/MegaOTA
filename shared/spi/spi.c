@@ -45,6 +45,7 @@ void spi_init() {
     BIT_CLR(PRR, _BV(PRSPI));                                                   // enable SPI
     BIT_SET(SPI_DDR, _BV3(SPI_SS_PIN, SPI_MOSI_PIN, SPI_SCK_PIN));              // define SS#, MOSI and SCK as output (MISO is input automatically)
     SPCR = _BV2(SPE, MSTR);                                                     // enable SPI, as Master with f/4
+    // SPSR = _BV(SPI2X);                                                       // increase the SPI Master speed to f/2
 
 #ifdef SPI_STDOUT
     static FILE spi_stdout = FDEV_SETUP_STREAM(spi_putc, NULL, _FDEV_SETUP_WRITE);

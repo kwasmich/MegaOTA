@@ -65,6 +65,9 @@ static void loop() {
     static ihex_state_t ihex;
     static update_page_t ublock;
     char c;
+    uint8_t p;
+    uint8_t len;
+    uint8_t rx_payload[32];
     static const uint8_t payload[32] = "Hello World!";
 
     if (uart_getchar_async(&c)) {
@@ -161,6 +164,17 @@ static void loop() {
             spi_exchange(0xA0);
             BIT_SET(PORTB, _BV(PB2));
         }
+        if (c == 'n') {
+            nrf24_carrier_start();
+        }
+        if (c == 'm') {
+            nrf24_carrier_stop();
+        }
+    }
+
+    if (nrf24_rx(&p, &len, rx_payload)) {
+        puts("received");
+        printf("pipe: %d\nlen : %d\ndata: %s\n", p, len, rx_payload);
     }
 
 //    BIT_SET(PORTB, _BV(PB5));

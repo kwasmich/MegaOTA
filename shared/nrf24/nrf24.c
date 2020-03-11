@@ -24,7 +24,7 @@
 //39C65A address prefix
 
 
-nrf24_register_config_u s_nrf24_config;
+static nrf24_register_config_u s_nrf24_config;
 
 
 
@@ -157,13 +157,33 @@ void nrf24_tx(const uint8_t in_LENGTH, const uint8_t in_PAYLOAD[static const in_
     nrf24_io_command_n(W_TX_PAYLOAD_NOACK, in_LENGTH, payload);
 
     // while tx fifo
-    // nrf24_io_ce_pulse();
+    nrf24_io_ce_pulse();
 }
 
 
 
-bool nrf24_rx(uint8_t *length, uint8_t payload[static const 32]) {
-    return false;
+bool nrf24_rx(uint8_t *out_pipe, uint8_t *out_length, uint8_t out_payload[static const 32]) {
+    bool result = false;
+
+    if (s_nrf24_io_irq_status.RX_DR) {
+        uint8_t length = nrf24_io_command_1(R_RX_PL_WID, 0x00);
+
+        if (length > 32) {
+            nrf24_io_command(FLUSH_RX);
+        } else {
+            *out_pipe = s_nrf24_io_status.RX_P_NO;
+            *out_length = length;
+            nrf24_io_command_n(R_RX_PAYLOAD, length, out_payload);
+            result = true;
+        }
+
+        // clear RX_DR flag
+        nrf24_register_status_u status = { .RX_DR = 1 };
+        nrf24_set_register_1(STATUS, status.u8);
+        s_nrf24_io_irq_status.RX_DR = false;
+    }
+
+    return result;
 }
 
 
@@ -210,14 +230,6 @@ void nrf24_init() {
 
 
 
-void nrf24_loop() {
-    if (s_nrf24_io_irq) {
-        s_nrf24_io_irq = false;
-    }
-}
-
-
-
 void nrf24_debug() {
     static const char* name[] = { "CONFIG", "EN_AA", "EN_RXADDR", "SETUP_AW",
         "SETUP_RETR", "RF_CH", "RF_SETUP", "STATUS", "OBSERVE_TX", "RPD",
@@ -243,4 +255,21 @@ void nrf24_debug() {
             }
         }
     }
+}
+
+
+void nrf24_carrier_start() {
+    puts("start carrier");
+    pwr_up();
+    nrf24_register_rf_setup_u rf_setup = { .CONT_WAVE = 1, .PLL_LOCK = 1, .RF_PWR = 0b11 };
+    nrf24_set_register_1(RF_SETUP, rf_setup.u8);
+    nrf24_io_ce_hi();
+}
+
+
+
+void nrf24_carrier_stop() {
+    nrf24_io_ce_lo();
+    pwr_down();
+    puts("stop carrier");
 }
