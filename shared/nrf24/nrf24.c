@@ -33,7 +33,7 @@ static uint8_t nrf24_get_register_1(const uint8_t in_REGISTER) {
         puts("nrf24_get_register_1 error");
     }
 
-    return nrf24_io_command_1(R_REGISTER xor in_REGISTER, 0x00);
+    return nrf24_io_command_1(R_REGISTER xor in_REGISTER, 0xFF);
 }
 
 
@@ -107,6 +107,14 @@ void nrf24_clear_interrupts() {
 
 
 
+void nrf24_clear_plos_cnt() {
+    nrf24_register_rf_ch_u rf_ch = { .RF_CH = 0x2E };
+    nrf24_set_register_1(RF_CH, rf_ch.u8);
+}
+
+
+
+
 
 
 
@@ -122,7 +130,7 @@ void nrf24_clear_interrupts() {
 
 
 void nrf24_rx_start() {
-    uint8_t length = nrf24_io_command_1(R_RX_PL_WID, 0x00);
+    uint8_t length = nrf24_io_command_1(R_RX_PL_WID, 0xFF);
     
     if (length > 32) {
         nrf24_io_command(FLUSH_RX);
@@ -166,7 +174,7 @@ bool nrf24_rx(uint8_t *out_pipe, uint8_t *out_length, uint8_t out_payload[static
     bool result = false;
 
     if (s_nrf24_io_irq_status.RX_DR) {
-        uint8_t length = nrf24_io_command_1(R_RX_PL_WID, 0x00);
+        uint8_t length = nrf24_io_command_1(R_RX_PL_WID, 0xFF);
 
         if (length > 32) {
             nrf24_io_command(FLUSH_RX);
@@ -183,6 +191,24 @@ bool nrf24_rx(uint8_t *out_pipe, uint8_t *out_length, uint8_t out_payload[static
         s_nrf24_io_irq_status.RX_DR = false;
     }
 
+    if (s_nrf24_io_irq_status.TX_DS) {
+        puts("TX_DS");
+
+        // clear TX_DS flag
+        nrf24_register_status_u status = { .TX_DS = 1 };
+        nrf24_set_register_1(STATUS, status.u8);
+        s_nrf24_io_irq_status.TX_DS = false;
+    }
+
+    if (s_nrf24_io_irq_status.MAX_RT) {
+        puts("MAX_RT");
+
+        // clear MAX_RT flag
+        nrf24_register_status_u status = { .MAX_RT = 1 };
+        nrf24_set_register_1(STATUS, status.u8);
+        s_nrf24_io_irq_status.MAX_RT = false;
+    }
+
     return result;
 }
 
@@ -195,9 +221,9 @@ void nrf24_init() {
     nrf24_register_en_aa_u en_aa = { .ENAA_P0 = 1, .ENAA_P1 = 1, .ENAA_P2 = 1, .ENAA_P3 = 1, .ENAA_P4 = 1, .ENAA_P5 = 1, };
     nrf24_register_en_rxaddr_u en_rxaddr = { .ERX_P0 = 1 };
     nrf24_register_setup_aw_u setup_aw = { .AW = 0b11 };
-    nrf24_register_setup_retr_u setup_retr = { .ARC = 15, .ARD = 1 };           // ARD >=500µs
+    nrf24_register_setup_retr_u setup_retr = { .ARC = 1, .ARD = 15 };           // ARD >=500µs (1 = 500µs, 15 = 4000µs)
     nrf24_register_rf_ch_u rf_ch = { .RF_CH = 0x2E };
-    nrf24_register_rf_setup_u rf_setup = { .RF_DR_LOW = 0, .RF_DR_HIGH = 0, .RF_PWR = 0b00 };
+    nrf24_register_rf_setup_u rf_setup = { .RF_DR_LOW = 0, .RF_DR_HIGH = 0, .RF_PWR = 0b10 };
     uint8_t addr[5] = { 0x00, 0x00, 0x5A, 0xC6, 0x39 };                         // prefix + addr = 39C65A 0000
 //    nrf24_register_rx_pw_u rx_pw = { .RX_PW = 32 };                             // is this required for dynamic payload?
     nrf24_register_dynpd_u dynpd = { .DPL_P0 = 1, .DPL_P1 = 1, .DPL_P2 = 1, .DPL_P3 = 1, .DPL_P4 = 1, .DPL_P5 = 1 };
@@ -213,6 +239,7 @@ void nrf24_init() {
     nrf24_set_register_n(RX_ADDR_P0, 5, addr);
     nrf24_set_register_n(RX_ADDR_P1, 5, addr);
     nrf24_set_register_n(TX_ADDR, 5, addr);
+    nrf24_set_register_1(RX_ADDR_P1, 0xFF);
 //    nrf24_set_register_1(RX_PW_P0, rx_pw.u8);
 //    nrf24_set_register_1(RX_PW_P1, rx_pw.u8);
 //    nrf24_set_register_1(RX_PW_P2, rx_pw.u8);

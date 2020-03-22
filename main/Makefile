@@ -47,8 +47,7 @@ dump:
 
 
 serial:
-	minicom -c on -D $(PORT)
-
+	minicom -b 19200 -c on -D $(PORT)
 
 
 disassembly:
