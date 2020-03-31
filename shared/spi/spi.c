@@ -5,6 +5,7 @@
 
 #include <avr/cpufunc.h>
 #include <avr/io.h>
+#include <avr/power.h>
 #include <stdio.h>
 
 
@@ -42,7 +43,7 @@ static int spi_putc(char c, FILE *stream) {
 
 
 void spi_init() {
-    BIT_CLR(PRR, _BV(PRSPI));                                                   // enable SPI
+    power_spi_enable();                                                         // enable SPI
     BIT_SET(SPI_DDR, _BV3(SPI_SS_PIN, SPI_MOSI_PIN, SPI_SCK_PIN));              // define SS#, MOSI and SCK as output (MISO is input automatically)
     SPCR = _BV2(SPE, MSTR);                                                     // enable SPI, as Master with f/4
     // SPSR = _BV(SPI2X);                                                       // increase the SPI Master speed to f/2
@@ -51,6 +52,12 @@ void spi_init() {
     static FILE spi_stdout = FDEV_SETUP_STREAM(spi_putc, NULL, _FDEV_SETUP_WRITE);
     stdout = &spi_stdout;
 #endif
+}
+
+
+
+void spi_deinit() {
+    power_spi_disable();                                                        // disable SPI
 }
 
 

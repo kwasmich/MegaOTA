@@ -16,6 +16,9 @@
 #define _BV3( A, B, C ) ( _BV2( A, B ) bitor _BV( C ) )
 #define _BV4( A, B, C, D ) ( _BV2( A, B ) bitor _BV2( C, D ) )
 #define _BV5( A, B, C, D, E ) ( _BV2( A, B ) bitor _BV3( C, D, E ) )
+#define _BV6( A, B, C, D, E, F ) ( _BV3( A, B, C ) bitor _BV3( D, E, F ) )
+#define _BV7( A, B, C, D, E, F, G ) ( _BV3( A, B, C ) bitor _BV4( D, E, F, G ) )
+#define _BV8( A, B, C, D, E, F, G, H ) ( _BV4( A, B, C, D ) bitor _BV4( E, F, G, H ) )
 #define BIT_SET( PORT, BIT_FIELD ) PORT |=  BIT_FIELD
 #define BIT_CLR( PORT, BIT_FIELD ) PORT &= ~BIT_FIELD
 #define BIT_TGL( PORT, BIT_FIELD ) PORT ^=  BIT_FIELD

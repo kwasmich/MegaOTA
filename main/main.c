@@ -24,6 +24,7 @@
 #include <avr/eeprom.h>
 #include <avr/interrupt.h>
 #include <avr/pgmspace.h>
+#include <avr/power.h>
 #include <avr/wdt.h>
 #include <iso646.h>
 #include <stdbool.h>
@@ -50,6 +51,9 @@ void main(void) __attribute__((OS_main, section(".init9")));
 
 
 static void setup() {
+    clock_prescale_set(clock_div_2);                                            // simulate 8MHz device
+    power_all_disable();                                                        // disable all components to save power - enable as required
+
     DDRB = _BV(PB5);
 
     spi_init();
@@ -106,6 +110,10 @@ static void parser(uint8_t c) {
                     nrf24_debug();
                     nrf24_tx(12, payload);
                     nrf24_debug();
+                    break;
+
+                case 0x0B:
+                    debug_clear_mem();
                     break;
             }
 

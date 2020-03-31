@@ -18,6 +18,7 @@
 
 // synchronous interface
 void uart_init(uint8_t in_OSCCAL);
+void uart_deinit(void);
 void uart_putchar(char c);
 uint8_t uart_getchar(void);
 
@@ -25,6 +26,7 @@ uint8_t uart_getchar(void);
 
 // asynchronous interface
 void uart_init_async(uint8_t in_OSCCAL);
+void uart_deinit_async(void);
 // void uart_putchar_async(char c);
 bool uart_getchar_async(char * const out_c);
 

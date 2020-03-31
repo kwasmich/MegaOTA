@@ -3,6 +3,7 @@
 #include "config.h"
 #include "macros.h"
 
+#include <avr/power.h>
 #include <util/twi.h>
 
 
@@ -18,10 +19,16 @@
 
 
 void i2c_init() {
-  BIT_CLR(PRR, _BV(PRTWI));                 // enable TWI
-  BIT_SET(TWI_PORT, _BV2(SDA, SCL));        // pullup SDA & SCL
-  TWSR = 0;                                 // Prescaler = 1
-  TWBR = (F_CPU / (2 * I2C_SPEED) - 8) / 1; // set bitrate
+  power_twi_enable();                                                           // enable TWI
+  BIT_SET(TWI_PORT, _BV2(SDA, SCL));                                            // pullup SDA & SCL
+  TWSR = 0;                                                                     // Prescaler = 1
+  TWBR = (F_CPU / (2 * I2C_SPEED) - 8) / 1;                                     // set bitrate
+}
+
+
+
+void i2c_deinit() {
+    power_twi_disable();                                                        // disable TWI
 }
 
 

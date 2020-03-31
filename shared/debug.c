@@ -75,6 +75,18 @@ void debug_dump_mem() {
 
 
 
+void debug_clear_mem() {
+    uint8_t *addr = (uint8_t *)&__bss_end;
+    addr++;
+
+    do {
+        *addr = 0;
+        addr++;
+    } while ((uintptr_t)addr < SP);
+}
+
+
+
 void debug_dump_eep() {
     // void eeprom_read_block(void * __dst, const void * __src, size_t __n);
     uint8_t *addr = (uint8_t *)0x0000;

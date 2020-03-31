@@ -32,3 +32,6 @@ dump flash
 
 dump nRF24L01+
 :0000000AF6
+
+clear memory
+:0000000BF5

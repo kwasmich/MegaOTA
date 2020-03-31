@@ -41,9 +41,10 @@ extern uint16_t __heap_start;
 // SP macro
 
 
-void debug_dump_pgm();
-void debug_dump_mem();
-void debug_dump_eep();
+void debug_dump_pgm(void);
+void debug_dump_mem(void);
+void debug_clear_mem(void);
+void debug_dump_eep(void);
 
 
 #endif /* debug_h */

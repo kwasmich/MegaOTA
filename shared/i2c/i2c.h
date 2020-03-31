@@ -6,9 +6,10 @@
 
 
 
-void i2c_init();
-bool i2c_start();
-void i2c_stop();
+void i2c_init(void);
+void i2c_deinit(void);
+bool i2c_start(void);
+void i2c_stop(void);
 bool i2c_address(uint8_t SLA, bool R);
 bool i2c_data(uint8_t DATA, bool R, bool ACK);
 

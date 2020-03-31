@@ -14,6 +14,7 @@
 
 #include <avr/interrupt.h>
 #include <avr/io.h>
+#include <avr/power.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <util/delay.h>
@@ -93,6 +94,8 @@ static void uart_calibrate_osc(uint8_t in_OSCCAL) {
 
 
 void uart_init(uint8_t in_OSCCAL) {
+    power_usart0_enable();                                                      // enable USART0
+
     uart_calibrate_osc(in_OSCCAL);
 
     UCSR0B = _BV2(RXEN0, TXEN0);
@@ -103,6 +106,12 @@ void uart_init(uint8_t in_OSCCAL) {
     stdout = &uart_stdout;
     // printf("%ld %ld %d\n", UBRRH_VALUE, UBRRL_VALUE, USE_2X);
 #endif
+}
+
+
+
+void uart_deinit() {
+    power_usart0_disable();                                                     // disable USART0
 }
 
 
@@ -122,6 +131,8 @@ uint8_t uart_getchar() {
 
 
 void uart_init_async(uint8_t in_OSCCAL) {
+    power_usart0_enable();                                                      // enable USART0
+
     uart_calibrate_osc(in_OSCCAL);
 
     UCSR0B = _BV3(RXCIE0, RXEN0, TXEN0);
@@ -132,6 +143,12 @@ void uart_init_async(uint8_t in_OSCCAL) {
     stdout = &uart_stdout;
     // printf("%ld %ld %d\n", UBRRH_VALUE, UBRRL_VALUE, USE_2X);
 #endif
+}
+
+
+
+void uart_deinit_async() {
+    power_usart0_disable();                                                     // disable USART0
 }
 
 
