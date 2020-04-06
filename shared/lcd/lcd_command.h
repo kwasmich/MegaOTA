@@ -25,7 +25,7 @@ typedef enum {
 
     DISPLAY_CTRL_DISPLAY        = 0x04,
     DISPLAY_CTRL_CURSOR         = 0x02,
-    DISPLAY_CTRL_BLINK          = 0x04,
+    DISPLAY_CTRL_BLINK          = 0x01,
 
     CURSOR_SHIFT_S              = 0x08,
     CURSOR_SHIFT_C              = 0x00,
