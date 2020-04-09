@@ -27,16 +27,16 @@ typedef enum {
     DISPLAY_CTRL_CURSOR         = 0x02,
     DISPLAY_CTRL_BLINK          = 0x01,
 
-    CURSOR_SHIFT_S              = 0x08,
-    CURSOR_SHIFT_C              = 0x00,
-    CURSOR_SHIFT_R              = 0x04,
-    CURSOR_SHIFT_L              = 0x00,
+    CURSOR_SHIFT_SCREEN         = 0x08,
+    CURSOR_SHIFT_CURSOR         = 0x00,
+    CURSOR_SHIFT_RIGHT          = 0x04,
+    CURSOR_SHIFT_LEFT           = 0x00,
 
     FUNCTION_SET_8BIT           = 0x10,
     FUNCTION_SET_4BIT           = 0x00,
     FUNCTION_SET_2LINE          = 0x08,
     FUNCTION_SET_1LINE          = 0x00,
-    FUNCTION_SET_5x11           = 0x04,
+    FUNCTION_SET_5x11           = 0x04,                                         // only in combination with 1LINE mode
     FUNCTION_SET_5x8            = 0x00
 } lcd_command_e;
 
