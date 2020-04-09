@@ -22,22 +22,22 @@
 #define LCD_LINES       2
 #define LCD_LINE_WIDTH  40
 
-#define LCD_CTRL_DDR    DDRB
-#define LCD_CTRL_PORT   PORTB
-#define LCD_RS_PIN      PB4
-#define LCD_RW_PIN      PB2
-#define LCD_E_PIN       PB3
+#define LCD_CTRL_DDR    DDRC
+#define LCD_CTRL_PORT   PORTC
+#define LCD_RS_PIN      PC0
+#define LCD_RW_PIN      PC0                                                     // R/W is not used here
+#define LCD_E_PIN       PC1
 
-#define LCD_DATA_DDR    DDRD
-#define LCD_DATA_PORT   PORTD
+#define LCD_DATA_DDR    DDRC
+#define LCD_DATA_PORT   PORTC
 #define LCD_DB0_PIN
 #define LCD_DB1_PIN
 #define LCD_DB2_PIN
 #define LCD_DB3_PIN
-#define LCD_DB4_PIN     PD5
-#define LCD_DB5_PIN     PD4
-#define LCD_DB6_PIN     PD3
-#define LCD_DB7_PIN     PD2
+#define LCD_DB4_PIN     PC2
+#define LCD_DB5_PIN     PC3
+#define LCD_DB6_PIN     PC4
+#define LCD_DB7_PIN     PC5
 
 #define LCD_STDOUT
 
