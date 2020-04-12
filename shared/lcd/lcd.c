@@ -26,18 +26,26 @@ void lcd_putchar(char c) {
 
 #ifdef LCD_STDOUT
 static bool s_new_line = false;
+static uint8_t s_line = 0;
 
 
 
 static int lcd_putc(char c, FILE *stream) {
-    if (c == '\n') {
+    if (c == '\n' || c == '\r') {
         s_new_line = true;
+        s_line = (s_line > 0) ? 0 : 1;
+        lcd_goto_line(s_line);
         return c;
     }
 
     if (s_new_line) {
         s_new_line = false;
-        lcd_clear_display();
+
+        for (uint8_t i = 0; i < 40; i++) {
+            lcd_putchar(' ');                                                   // clear the entire line
+        }
+
+        lcd_goto_line(s_line);
     }
 
     lcd_putchar(c);
@@ -166,8 +174,6 @@ void lcd_init() {
     stdout = &lcd_stdout;
 #endif
 
-    puts("READY");
-    lcd_goto_line(1);
     //test_custom_glyph();
 }
 

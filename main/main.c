@@ -62,7 +62,7 @@ static void setup() {
     uart_init_async(0x00);
     lcd_init();
     sei();
-    puts("ready");
+    puts("READY");
 }
 
 
