@@ -10,12 +10,14 @@
 #define lcd_h
 
 
-#include "lcd_command.h"
-
-#include <stdbool.h>
 #include <stdint.h>
 
 
+
+void lcd_clear_display(void);
+void lcd_goto_line(uint8_t line);
+void lcd_set_glyph5x8(uint8_t c, uint8_t data[static const 8]);
+void lcd_set_glyph5x11(uint8_t c, uint8_t data[static const 11]);
 
 void lcd_init(void);
 void lcd_deinit(void);

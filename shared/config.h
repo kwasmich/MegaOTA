@@ -19,6 +19,10 @@
 // Intel HEX
 #define IHEX_DATA_MAX 32
 
+// LCD 16x2
+#define LCD_INTERFACE_4_BIT
+#define LCD_STDOUT
+
 // SPI
 //#define SPI_STDOUT
 //#define SPI_EEPROM_24BIT
@@ -27,7 +31,7 @@
 #define UART_BAUD 19200
 #define UART_RX_BUFFER_SIZE 4
 #define UART_TX_BUFFER_SIZE 4
-#define UART_STDOUT
+//#define UART_STDOUT
 
 // nRF24L01+
 //#define NRF24_CE_PORT  PORTB

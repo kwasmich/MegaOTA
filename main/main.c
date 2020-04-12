@@ -17,6 +17,7 @@
 #include "spi/spi.h"
 #include "uart/uart.h"
 #include "nrf24/nrf24.h"
+#include "lcd/lcd.h"
 
 
 
@@ -59,6 +60,7 @@ static void setup() {
     spi_init();
     nrf24_init();
     uart_init_async(0x00);
+    lcd_init();
     sei();
     puts("ready");
 }
@@ -139,6 +141,7 @@ static void parser(uint8_t c) {
 
 
 static void loop() {
+    return;
     char c;
     uint8_t p;
     uint8_t len;
