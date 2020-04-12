@@ -141,7 +141,6 @@ static void parser(uint8_t c) {
 
 
 static void loop() {
-    return;
     char c;
     uint8_t p;
     uint8_t len;

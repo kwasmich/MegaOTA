@@ -12,6 +12,7 @@
 
 #include "config.h"
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -24,9 +25,19 @@ void lcd_putchar(char c) {
 
 
 #ifdef LCD_STDOUT
+static bool s_new_line = false;
+
+
+
 static int lcd_putc(char c, FILE *stream) {
     if (c == '\n') {
+        s_new_line = true;
         return c;
+    }
+
+    if (s_new_line) {
+        s_new_line = false;
+        lcd_clear_display();
     }
 
     lcd_putchar(c);
