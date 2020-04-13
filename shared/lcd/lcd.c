@@ -35,7 +35,7 @@ static int lcd_putc(char c, FILE *stream) {
         s_new_line = true;
         s_line = (s_line > 0) ? 0 : 1;
         lcd_goto_line(s_line);
-        return c;
+        return 0;
     }
 
     if (s_new_line) {
@@ -49,7 +49,7 @@ static int lcd_putc(char c, FILE *stream) {
     }
 
     lcd_putchar(c);
-    return c;
+    return 0;
 }
 #endif
 
@@ -58,6 +58,7 @@ static int lcd_putc(char c, FILE *stream) {
 void lcd_clear_display() {
     lcd_io_clear_display();
 }
+
 
 
 void lcd_goto_line(uint8_t line) {

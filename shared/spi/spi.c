@@ -36,7 +36,7 @@ static int spi_putc(char c, FILE *stream) {
     }
 
     spi_exchange(c);
-    return c;
+    return 0;
 }
 #endif
 

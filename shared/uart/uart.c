@@ -61,7 +61,7 @@ static int uart_putc(char c, FILE *stream) {
     }
 
     uart_putchar(c);
-    return c;
+    return 0;
 }
 #endif
 

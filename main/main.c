@@ -63,6 +63,8 @@ static void setup() {
     lcd_init();
     sei();
     puts("READY");
+    const char hello[] = "Hello, World!\n";
+    fwrite(hello, sizeof(hello[0]), strlen(hello), stdout);
 }
 
 
