@@ -197,7 +197,7 @@ typedef union {
     };
 
     uint8_t u8;
-} nrf24_register_fifi_status_u;
+} nrf24_register_fifo_status_u;
 
 
 typedef union {

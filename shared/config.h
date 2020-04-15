@@ -24,8 +24,8 @@
 #define LCD_STDOUT
 
 // SPI
-//#define SPI_STDOUT
 //#define SPI_EEPROM_24BIT
+//#define SPI_STDOUT
 
 // UART
 #define UART_BAUD 19200
