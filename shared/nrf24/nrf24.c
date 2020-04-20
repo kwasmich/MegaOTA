@@ -257,9 +257,9 @@ void nrf24_init() {
     nrf24_register_en_aa_u en_aa = { .ENAA_P0 = 1, .ENAA_P1 = 1, .ENAA_P2 = 1, .ENAA_P3 = 1, .ENAA_P4 = 1, .ENAA_P5 = 1, };
     nrf24_register_en_rxaddr_u en_rxaddr = { .ERX_P0 = 1 };
     nrf24_register_setup_aw_u setup_aw = { .AW = 0b11 };
-    nrf24_register_setup_retr_u setup_retr = { .ARC = 15, .ARD = 15 };           // ARD >=500µs (1 = 500µs, 15 = 4000µs)
+    nrf24_register_setup_retr_u setup_retr = { .ARC = 0, .ARD = 1 };           // ARD ≥ 500µs (1 = 500µs, 15 = 4000µs)
     nrf24_register_rf_ch_u rf_ch = { .RF_CH = 0x2E };
-    nrf24_register_rf_setup_u rf_setup = { .RF_DR_LOW = 0, .RF_DR_HIGH = 0, .RF_PWR = 0b00 };
+    nrf24_register_rf_setup_u rf_setup = { .RF_DR_LOW = 0, .RF_DR_HIGH = 1, .RF_PWR = 0b00 };
     uint8_t addr[5] = { 0x00, 0x00, 0x5A, 0xC6, 0x39 };                         // prefix + addr = 39C65A 0000
 //    nrf24_register_rx_pw_u rx_pw = { .RX_PW = 32 };                             // is this required for dynamic payload?
     nrf24_register_dynpd_u dynpd = { .DPL_P0 = 1, .DPL_P1 = 1, .DPL_P2 = 1, .DPL_P3 = 1, .DPL_P4 = 1, .DPL_P5 = 1 };

@@ -18,6 +18,7 @@
 #include "uart/uart.h"
 #include "nrf24/nrf24.h"
 #include "lcd/lcd.h"
+#include "crypto/entropy.h"
 
 
 
@@ -37,7 +38,8 @@
 
 
 
-
+//#define RX
+//#define TX
 
 
 
@@ -234,6 +236,124 @@ static void loop() {
 
 
 
+
+static uint8_t payload[32] = "Hello, World!___________________";
+static uint16_t tx_count = 0;
+static uint16_t tx_fail_count = 0;
+static uint16_t tx_win_count = 0;
+static uint16_t rx_count = 0;
+
+
+
+static void lap() {
+    static uint16_t t = 0;
+    static uint16_t r = 0;
+    static uint16_t f = 0;
+
+    const uint8_t rf = (rx_count - r) / 16;
+
+    lcd_clear_display();
+    lcd_goto_line(0);
+
+    for (uint8_t i = 0; i < rf; i++) {
+        putchar(0xFF);
+    }
+
+    lcd_goto_line(1);
+
+    t = tx_count;
+    r = rx_count;
+    f = tx_fail_count;
+
+    //printf("t:%5u  w:%5u\nf:%5u  r:%5u\n", tx_count, tx_win_count, tx_fail_count, rx_count);
+}
+
+
+
+static void tx() {
+    if ((tx_count & 0xFF) == 0) {
+        lap();
+    }
+
+    if (tx_count != UINT16_MAX) {
+//        fputs("TX ... ", stdout);
+//        entropy(4, &payload[28]);
+        nrf24_tx(32, payload);
+        tx_count++;
+    } else {
+        printf("t:%5u  w:%5u\nf:%5u  r:%5u\n", tx_count, tx_win_count, tx_fail_count, rx_count);
+    }
+}
+
+
+
+static void setup_ptx() {
+    setup();
+    tx();
+}
+
+
+
+static void loop_ptx() {
+    uint8_t p;
+    uint8_t len;
+    uint8_t rx_payload[32];
+
+    if (nrf24_tx_fail()) {
+        tx_fail_count++;
+//        puts("failed");
+        nrf24_flush_tx();
+        tx();
+    }
+
+    if (nrf24_tx_done()) {
+        tx_win_count++;
+//        puts("done");
+        tx();
+    }
+
+    if (nrf24_rx(&p, &len, rx_payload)) {
+        rx_count++;
+//        printf("received pipe: %d len : %d data : ", p, len);
+//
+//        for (uint8_t i = 0; i < len; i++) {
+//            printf("%02x ", rx_payload[i]);
+//        }
+//
+//        puts("");
+    }
+}
+
+
+
+static void setup_prx() {
+    setup();
+    memset(payload, 0, sizeof(payload));
+    nrf24_enqueue_ack_payload(0, sizeof(payload), payload);
+    nrf24_rx_start();
+}
+
+
+
+static void loop_prx() {
+    uint8_t p;
+    uint8_t len;
+    uint8_t rx_payload[32];
+
+    if (nrf24_rx(&p, &len, rx_payload)) {
+        nrf24_enqueue_ack_payload(0, sizeof(rx_payload), rx_payload);
+//        printf("received pipe: %d len : %d data : ", p, len);
+//
+//        for (uint8_t i = 0; i < len; i++) {
+//            printf("%02x ", rx_payload[i]);
+//        }
+//
+//        puts("");
+    }
+}
+
+
+
 void main(void) {
     // set all ports to output and low to reduce power consumption
     // DDRB = 0xFF;
@@ -243,11 +363,25 @@ void main(void) {
     // PORTC = 0x00;
     // PORTD = 0x00;
 
+#if defined(TX) && !defined(RX)
+    setup_ptx();
+
+    do {
+        loop_ptx();
+    } while (true);
+#elif defined(RX) && !defined(TX)
+    setup_prx();
+
+    do {
+        loop_prx();
+    } while (true);
+#else
     setup();
 
     do {
         loop();
     } while (true);
+#endif
 
 //    write();
 //    wdt_enable(WDTO_15MS);
