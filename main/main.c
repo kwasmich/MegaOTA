@@ -17,12 +17,14 @@
 #include "spi/spi.h"
 #include "uart/uart.h"
 #include "nrf24/nrf24.h"
+#include "nrf24/nrf24_io.h"
 #include "lcd/lcd.h"
 #include "crypto/entropy.h"
 
 
 
 #include <avr/boot.h>
+#include <avr/cpufunc.h>
 #include <avr/eeprom.h>
 #include <avr/interrupt.h>
 #include <avr/pgmspace.h>
@@ -32,14 +34,13 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <util/delay.h>
 
 
 
 
-//#define RX
-//#define TX
 
 
 
@@ -236,7 +237,14 @@ static void loop() {
 
 
 
+#define SIGNAL_NONE     0
+#define SIGNAL_STRENGTH 1
+#define SIGNAL_QUALITY  2
+#define SIGNAL_RX       1
+#define SIGNAL_TX       2
 
+static uint8_t signal_mode = SIGNAL_NONE;
+static uint8_t signal_node = SIGNAL_NONE;
 static uint8_t payload[32] = "Hello, World!___________________";
 static uint16_t tx_count = 0;
 static uint16_t tx_fail_count = 0;
@@ -260,6 +268,16 @@ static void lap() {
     }
 
     lcd_goto_line(1);
+
+    switch (signal_mode) {
+        case SIGNAL_STRENGTH:
+            fputs("Signal Srength", stdout);
+            break;
+
+        case SIGNAL_QUALITY:
+            fputs("Signal Quality", stdout);
+            break;
+    }
 
     t = tx_count;
     r = rx_count;
@@ -287,47 +305,36 @@ static void tx() {
 
 
 
-static void setup_ptx() {
-    setup();
+static void setup_ptx_quality() {
     tx();
 }
 
 
 
-static void loop_ptx() {
+static void loop_ptx_quality() {
     uint8_t p;
     uint8_t len;
     uint8_t rx_payload[32];
 
     if (nrf24_tx_fail()) {
         tx_fail_count++;
-//        puts("failed");
         nrf24_flush_tx();
         tx();
     }
 
     if (nrf24_tx_done()) {
         tx_win_count++;
-//        puts("done");
         tx();
     }
 
     if (nrf24_rx(&p, &len, rx_payload)) {
         rx_count++;
-//        printf("received pipe: %d len : %d data : ", p, len);
-//
-//        for (uint8_t i = 0; i < len; i++) {
-//            printf("%02x ", rx_payload[i]);
-//        }
-//
-//        puts("");
     }
 }
 
 
 
-static void setup_prx() {
-    setup();
+static void setup_prx_quality() {
     memset(payload, 0, sizeof(payload));
     nrf24_enqueue_ack_payload(0, sizeof(payload), payload);
     nrf24_rx_start();
@@ -335,20 +342,32 @@ static void setup_prx() {
 
 
 
-static void loop_prx() {
+static void loop_prx_quality() {
     uint8_t p;
     uint8_t len;
     uint8_t rx_payload[32];
 
     if (nrf24_rx(&p, &len, rx_payload)) {
         nrf24_enqueue_ack_payload(0, sizeof(rx_payload), rx_payload);
-//        printf("received pipe: %d len : %d data : ", p, len);
-//
-//        for (uint8_t i = 0; i < len; i++) {
-//            printf("%02x ", rx_payload[i]);
-//        }
-//
-//        puts("");
+    }
+}
+
+
+
+static void loop_prx_strength() {
+    _delay_ms(1);
+    uint8_t u8 = nrf24_io_command_1(R_REGISTER xor RPD, 0xFF);
+
+    if ((tx_count & 0xFF) == 0) {
+        lap();
+    }
+
+    if (tx_count != UINT16_MAX) {
+        tx_count++;
+        rx_count += u8;
+    } else {
+        printf("r:%5u  w:%5u\n\n", tx_count, rx_count);
+        exit(0);
     }
 }
 
@@ -363,25 +382,63 @@ void main(void) {
     // PORTC = 0x00;
     // PORTD = 0x00;
 
-#if defined(TX) && !defined(RX)
-    setup_ptx();
-
-    do {
-        loop_ptx();
-    } while (true);
-#elif defined(RX) && !defined(TX)
-    setup_prx();
-
-    do {
-        loop_prx();
-    } while (true);
-#else
     setup();
 
-    do {
-        loop();
-    } while (true);
-#endif
+    BIT_SET(PORTD, _BV3(PD5, PD6, PD7));
+    BIT_CLR(DDRD, _BV3(PD5, PD6, PD7));
+    _NOP();
+    uint8_t pind = PIND;
+    if ((pind & _BV(PD7)) == 0) {
+        signal_mode = SIGNAL_QUALITY;
+        signal_node = (pind & _BV(PD5)) ? SIGNAL_RX : SIGNAL_TX;
+    } else if ((pind & _BV(PD6)) == 0) {
+        signal_mode = SIGNAL_STRENGTH;
+        signal_node = (pind & _BV(PD5)) ? SIGNAL_TX : SIGNAL_RX;
+    }
+
+    if (signal_mode == SIGNAL_STRENGTH) {
+        lcd_clear_display();
+        puts("Signal Strenght");
+
+        if (signal_node == SIGNAL_TX) {
+            puts("TX");
+            _delay_ms(3000);
+            nrf24_carrier_start();
+        } else if (signal_node == SIGNAL_RX) {
+            puts("RX");
+            _delay_ms(3000);
+            nrf24_rx_start();
+
+            do {
+                loop_prx_strength();
+            } while (true);
+        }
+    } else if (signal_mode == SIGNAL_QUALITY) {
+        lcd_clear_display();
+        puts("Signal Quality");
+
+        if (signal_node == SIGNAL_TX) {
+            puts("TX");
+            _delay_ms(3000);
+            setup_ptx_quality();
+
+            do {
+                loop_ptx_quality();
+            } while (true);
+        } else if (signal_node == SIGNAL_RX) {
+            puts("RX");
+            _delay_ms(3000);
+            setup_prx_quality();
+
+            do {
+                loop_prx_quality();
+            } while (true);
+        }
+    } else {
+        do {
+            loop();
+        } while (true);
+    }
 
 //    write();
 //    wdt_enable(WDTO_15MS);
