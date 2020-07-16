@@ -36,8 +36,7 @@ bool ihex_parse_async(ihex_state_t * const in_out_state, const char in_C) {
     }
 
     switch (in_out_state->_state) {
-        case 1:
-        case 2:
+        case 1 ... 2:
             in_out_state->len <<= 4;
             in_out_state->len += parse_nibble(in_C);
             in_out_state->_state++;
@@ -49,17 +48,13 @@ bool ihex_parse_async(ihex_state_t * const in_out_state, const char in_C) {
 
             break;
 
-        case 3:
-        case 4:
-        case 5:
-        case 6:
+        case 3 ... 6:
             in_out_state->offset <<= 4;
             in_out_state->offset += parse_nibble(in_C);
             in_out_state->_state++;
             break;
 
-        case 7:
-        case 8:
+        case 7 ... 8:
             in_out_state->type <<= 4;
             in_out_state->type += parse_nibble(in_C);
             in_out_state->_state++;
@@ -82,8 +77,7 @@ bool ihex_parse_async(ihex_state_t * const in_out_state, const char in_C) {
 
             break;
 
-        case 10:
-        case 11:
+        case 10 ... 11:
             in_out_state->chksum <<= 4;
             in_out_state->chksum += parse_nibble(in_C);
             in_out_state->_state++;
@@ -107,4 +101,4 @@ bool ihex_parse_async(ihex_state_t * const in_out_state, const char in_C) {
     }
 
     return false;
-};
+}
