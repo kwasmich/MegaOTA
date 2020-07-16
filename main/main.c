@@ -157,83 +157,86 @@ static void parser(uint8_t c) {
 
 
 static void loop() {
-    char c;
-    uint8_t p;
-    uint8_t len;
-    static uint8_t tx_len = 1;
-    uint8_t rx_payload[32];
-    static const uint8_t payload[32] = "Hello World! ABCDEFGHIJKLMNOPQRS";
-
-    if (uart_getchar_async(&c)) {
-        parser(c);
-
-        if (c == 'r') {
-            puts("start listening!");
-            nrf24_rx_start();
-        }
-        if (c == 's') {
-            nrf24_rx_stop();
-            puts("stopped listening!");
-        }
-        if (c == 'd') {
-            nrf24_debug();
-        }
-        if (c == 't') {
-            puts("sending…");
-            nrf24_tx(tx_len, payload);
-            tx_len++;
-
-            if (tx_len > 32) {
-                tx_len = 1;
-            }
-        }
-        if (c == 'z') {
-            BIT_SET(PORTB, _BV(PB1));
-            _delay_us(15);
-            BIT_CLR(PORTB, _BV(PB1));
-        }
-        if (c == 'u') {
-            BIT_SET(PORTB, _BV(PB1));
-        }
-        if (c == 'i') {
-            BIT_CLR(PORTB, _BV(PB1));
-        }
-        if (c == 'q') {
-            puts("clear interrupts");
-            nrf24_clear_interrupts();
-        }
-        if (c == 'w') {
-            puts("clear plos cnt");
-            nrf24_clear_plos_cnt();
-        }
-        if (c == 'n') {
-            nrf24_carrier_start();
-        }
-        if (c == 'm') {
-            nrf24_carrier_stop();
-        }
-    }
-
-    if (nrf24_rx(&p, &len, rx_payload)) {
-        puts("received");
-        printf("pipe: %d\nlen : %d\ndata: ", p, len);
-
-        for (uint8_t i = 0; i < len; i++) {
-            putchar(rx_payload[i]);
-        }
-
-        puts("");
-
-        for (uint8_t i = 0; i < len; i++) {
-            parser(rx_payload[i]);
-        }
-    }
-
+//    char c;
+//    uint8_t p;
+//    uint8_t len;
+//    static uint8_t tx_len = 1;
+//    uint8_t rx_payload[32];
+//    static const uint8_t payload[32] = "Hello World! ABCDEFGHIJKLMNOPQRS";
+//
+//    if (uart_getchar_async(&c)) {
+//        parser(c);
+//
+//        if (c == 'r') {
+//            puts("start listening!");
+//            nrf24_rx_start();
+//        }
+//        if (c == 's') {
+//            nrf24_rx_stop();
+//            puts("stopped listening!");
+//        }
+//        if (c == 'd') {
+//            nrf24_debug();
+//        }
+//        if (c == 't') {
+//            puts("sending…");
+//            nrf24_tx(tx_len, payload);
+//            tx_len++;
+//
+//            if (tx_len > 32) {
+//                tx_len = 1;
+//            }
+//        }
+//        if (c == 'z') {
+//            BIT_SET(PORTB, _BV(PB1));
+//            _delay_us(15);
+//            BIT_CLR(PORTB, _BV(PB1));
+//        }
+//        if (c == 'u') {
+//            BIT_SET(PORTB, _BV(PB1));
+//        }
+//        if (c == 'i') {
+//            BIT_CLR(PORTB, _BV(PB1));
+//        }
+//        if (c == 'q') {
+//            puts("clear interrupts");
+//            nrf24_clear_interrupts();
+//        }
+//        if (c == 'w') {
+//            puts("clear plos cnt");
+//            nrf24_clear_plos_cnt();
+//        }
+//        if (c == 'n') {
+//            nrf24_carrier_start();
+//        }
+//        if (c == 'm') {
+//            nrf24_carrier_stop();
+//        }
+//    }
+//
+//    if (nrf24_rx(&p, &len, rx_payload)) {
+//        puts("received");
+//        printf("pipe: %d\nlen : %d\ndata: ", p, len);
+//
+//        for (uint8_t i = 0; i < len; i++) {
+//            putchar(rx_payload[i]);
+//        }
+//
+//        puts("");
+//
+//        for (uint8_t i = 0; i < len; i++) {
+//            parser(rx_payload[i]);
+//        }
+//    }
+//
 
     static uint32_t before = 0;
-    uint32_t now = s_time;
 
-    if (before + 63 < now) {
+    cli();
+    uint32_t now = s_time; // atomic
+    sei();
+
+    if (before + 60 < now) {
         before = now;
         BIT_TGL(PORTB, _BV(PB5));
     }
