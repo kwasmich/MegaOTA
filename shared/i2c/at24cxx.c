@@ -72,6 +72,7 @@ bool i2c_eeprom_write_byte(uint16_t ADDR, uint8_t DATA) {
     status = i2c_data(ADDR & 0xFF, false, false);
     status = i2c_data(DATA, false, false);
     i2c_stop();
+    return true;
 }
 
 
@@ -92,4 +93,5 @@ bool i2c_eeprom_write_block(uint16_t ADDR, uint8_t *DATA, uint8_t CNT) {
     }
     
     i2c_stop();
+    return true;
 }

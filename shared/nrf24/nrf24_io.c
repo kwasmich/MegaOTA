@@ -53,7 +53,7 @@
 
 
 volatile nrf24_register_status_u s_nrf24_io_status;
-volatile nrf24_register_status_u s_nrf24_io_irq_status = {};
+volatile nrf24_register_status_u s_nrf24_io_irq_status = { .u8 = 0 };
 
 
 
