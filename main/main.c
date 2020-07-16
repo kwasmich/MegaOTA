@@ -41,6 +41,11 @@
 
 
 
+volatile static uint32_t s_time = 0;
+
+ISR(WDT_vect) {
+    s_time++;
+}
 
 
 
@@ -60,14 +65,20 @@ static void setup() {
 
     DDRB = _BV(PB5);
 
-    spi_init();
-    nrf24_init();
+//    spi_init();
+//    nrf24_init();
     uart_init_async(0x00);
-    lcd_init();
+//    lcd_init();
+
+    cli();
+    wdt_reset();
+    BIT_SET(WDTCSR, _BV2(WDCE, WDE));
+    WDTCSR = 0;
+    BIT_SET(WDTCSR, _BV(WDIE));
     sei();
+
+
     puts("READY");
-    const char hello[] = "Hello, World!\n";
-    fwrite(hello, sizeof(hello[0]), strlen(hello), stdout);
 }
 
 
@@ -218,157 +229,22 @@ static void loop() {
         }
     }
 
+
+    static uint32_t before = 0;
+    uint32_t now = s_time;
+
+    if (before + 63 < now) {
+        before = now;
+        BIT_TGL(PORTB, _BV(PB5));
+    }
+
+
 //    BIT_SET(PORTB, _BV(PB5));
 //    _delay_ms(10);
 //    BIT_CLR(PORTB, _BV(PB5));
 //    _delay_ms(1990);
 
     // puts("blink");
-
-//    if (s_uart_buffer_ready) {
-//        cli();
-//        puts(s_uart_buffer);
-//        s_uart_buffer_fill = 0;
-//        s_uart_buffer[0] = 0;
-//        s_uart_buffer_ready = false;
-//        sei();
-//    }
-}
-
-
-
-#define SIGNAL_NONE     0
-#define SIGNAL_STRENGTH 1
-#define SIGNAL_QUALITY  2
-#define SIGNAL_RX       1
-#define SIGNAL_TX       2
-
-static uint8_t signal_mode = SIGNAL_NONE;
-static uint8_t signal_node = SIGNAL_NONE;
-static uint8_t payload[32] = "Hello, World!___________________";
-static uint16_t tx_count = 0;
-static uint16_t tx_fail_count = 0;
-static uint16_t tx_win_count = 0;
-static uint16_t rx_count = 0;
-
-
-
-static void lap() {
-    static uint16_t t = 0;
-    static uint16_t r = 0;
-    static uint16_t f = 0;
-
-    const uint8_t rf = (rx_count - r) / 16;
-
-    lcd_clear_display();
-    lcd_goto_line(0);
-
-    for (uint8_t i = 0; i < rf; i++) {
-        putchar(0xFF);
-    }
-
-    lcd_goto_line(1);
-
-    switch (signal_mode) {
-        case SIGNAL_STRENGTH:
-            fputs("Signal Srength", stdout);
-            break;
-
-        case SIGNAL_QUALITY:
-            fputs("Signal Quality", stdout);
-            break;
-    }
-
-    t = tx_count;
-    r = rx_count;
-    f = tx_fail_count;
-
-    //printf("t:%5u  w:%5u\nf:%5u  r:%5u\n", tx_count, tx_win_count, tx_fail_count, rx_count);
-}
-
-
-
-static void tx() {
-    if ((tx_count & 0xFF) == 0) {
-        lap();
-    }
-
-    if (tx_count != UINT16_MAX) {
-//        fputs("TX ... ", stdout);
-//        entropy(4, &payload[28]);
-        nrf24_tx(32, payload);
-        tx_count++;
-    } else {
-        printf("t:%5u  w:%5u\nf:%5u  r:%5u\n", tx_count, tx_win_count, tx_fail_count, rx_count);
-    }
-}
-
-
-
-static void setup_ptx_quality() {
-    tx();
-}
-
-
-
-static void loop_ptx_quality() {
-    uint8_t p;
-    uint8_t len;
-    uint8_t rx_payload[32];
-
-    if (nrf24_tx_fail()) {
-        tx_fail_count++;
-        nrf24_flush_tx();
-        tx();
-    }
-
-    if (nrf24_tx_done()) {
-        tx_win_count++;
-        tx();
-    }
-
-    if (nrf24_rx(&p, &len, rx_payload)) {
-        rx_count++;
-    }
-}
-
-
-
-static void setup_prx_quality() {
-    memset(payload, 0, sizeof(payload));
-    nrf24_enqueue_ack_payload(0, sizeof(payload), payload);
-    nrf24_rx_start();
-}
-
-
-
-static void loop_prx_quality() {
-    uint8_t p;
-    uint8_t len;
-    uint8_t rx_payload[32];
-
-    if (nrf24_rx(&p, &len, rx_payload)) {
-        nrf24_enqueue_ack_payload(0, sizeof(rx_payload), rx_payload);
-    }
-}
-
-
-
-static void loop_prx_strength() {
-    _delay_ms(1);
-    uint8_t u8 = nrf24_io_command_1(R_REGISTER xor RPD, 0xFF);
-
-    if ((tx_count & 0xFF) == 0) {
-        lap();
-    }
-
-    if (tx_count != UINT16_MAX) {
-        tx_count++;
-        rx_count += u8;
-    } else {
-        printf("r:%5u  w:%5u\n\n", tx_count, rx_count);
-        exit(0);
-    }
 }
 
 
@@ -384,61 +260,9 @@ void main(void) {
 
     setup();
 
-    BIT_SET(PORTD, _BV3(PD5, PD6, PD7));
-    BIT_CLR(DDRD, _BV3(PD5, PD6, PD7));
-    _NOP();
-    uint8_t pind = PIND;
-    if ((pind & _BV(PD7)) == 0) {
-        signal_mode = SIGNAL_QUALITY;
-        signal_node = (pind & _BV(PD5)) ? SIGNAL_RX : SIGNAL_TX;
-    } else if ((pind & _BV(PD6)) == 0) {
-        signal_mode = SIGNAL_STRENGTH;
-        signal_node = (pind & _BV(PD5)) ? SIGNAL_TX : SIGNAL_RX;
-    }
-
-    if (signal_mode == SIGNAL_STRENGTH) {
-        lcd_clear_display();
-        puts("Signal Strenght");
-
-        if (signal_node == SIGNAL_TX) {
-            puts("TX");
-            _delay_ms(3000);
-            nrf24_carrier_start();
-        } else if (signal_node == SIGNAL_RX) {
-            puts("RX");
-            _delay_ms(3000);
-            nrf24_rx_start();
-
-            do {
-                loop_prx_strength();
-            } while (true);
-        }
-    } else if (signal_mode == SIGNAL_QUALITY) {
-        lcd_clear_display();
-        puts("Signal Quality");
-
-        if (signal_node == SIGNAL_TX) {
-            puts("TX");
-            _delay_ms(3000);
-            setup_ptx_quality();
-
-            do {
-                loop_ptx_quality();
-            } while (true);
-        } else if (signal_node == SIGNAL_RX) {
-            puts("RX");
-            _delay_ms(3000);
-            setup_prx_quality();
-
-            do {
-                loop_prx_quality();
-            } while (true);
-        }
-    } else {
-        do {
-            loop();
-        } while (true);
-    }
+    do {
+        loop();
+    } while (true);
 
 //    write();
 //    wdt_enable(WDTO_15MS);
