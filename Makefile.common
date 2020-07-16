@@ -22,11 +22,11 @@ BOOT_OTA_END    = $(shell printf "0x%04x\n" $$(($(BOOT_START) - 1)))
 BOOT_END        = $(shell printf "0x%04x\n" $$(($(WRITE_START) - 1)))
 WRITE_END       = $(shell printf "0x%04x\n" $$(($(FLASH_END) - 1)))
 
-CFLAGS = -Wall -Wno-main -Os -MMD -mmcu=$(MCU) -DF_CPU=8000000UL -I../shared/
+CFLAGS = -Wall -Wpedantic -Waddr-space-convert -Wno-main -Os -MMD -mmcu=$(MCU) -DF_CPU=8000000UL -I../shared/
 LDFLAGS = -mrelax
 
 # strip dead code
-CFLAGS += -ffunction-sections -fdata-sections
+CFLAGS += -ffunction-sections -fdata-sections -fshort-enums
 LDFLAGS += -Wl,--gc-sections \
 			-Wl,--print-gc-sections \
 			-Wl,--undefined=boot_version \
