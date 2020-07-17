@@ -20,7 +20,7 @@
 #include "nrf24/nrf24_io.h"
 #include "lcd/lcd.h"
 #include "crypto/entropy.h"
-
+#include "time/time.h"
 
 
 #include <avr/boot.h>
@@ -37,15 +37,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <util/delay.h>
-
-
-
-
-volatile static uint32_t s_time = 0;
-
-ISR(WDT_vect) {
-    s_time++;
-}
 
 
 
@@ -69,14 +60,7 @@ static void setup() {
 //    nrf24_init();
     uart_init_async(0x00);
 //    lcd_init();
-
-    cli();
-    wdt_reset();
-    BIT_SET(WDTCSR, _BV2(WDCE, WDE));
-    WDTCSR = 0;
-    BIT_SET(WDTCSR, _BV(WDIE));
-    sei();
-
+    time_init();
 
     puts("READY");
 }
@@ -233,11 +217,11 @@ static void loop() {
     static uint32_t before = 0;
 
     cli();
-    uint32_t now = s_time; // atomic
+    uint32_t now = s_time_ms; // atomic
     sei();
 
-    if (before + 60 < now) {
-        before = now;
+    if (now >= before + 100) {
+        before += 100;
         BIT_TGL(PORTB, _BV(PB5));
     }
 
