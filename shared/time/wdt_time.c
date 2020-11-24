@@ -8,6 +8,7 @@
 
 #include "wdt_time.h"
 
+#include "config.h"
 #include "macros.h"
 
 #include "time/time.h"
@@ -17,6 +18,7 @@
 #include <stdbool.h>
 
 
+#ifdef TIME_WDT
 
 ISR(WDT_vect) {
     static bool odd = false;
@@ -35,3 +37,4 @@ void time_wdt_init() {
     sei();
 }
 
+#endif // TIME_WDT

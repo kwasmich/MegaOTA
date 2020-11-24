@@ -6,10 +6,11 @@ Using
 * nRF24L01+
 * AT24C512
 * SST25VF512
+* and maybe more over time
 
 
 
-## sample input vor update over UART
+## sample input for update over UART
 
 :1038000014BE0FB6F894A8958091600088618093EB
 :103810006000109260000FBECDB7DEB76097DEBFCC
@@ -35,3 +36,13 @@ dump nRF24L01+
 
 clear memory
 :0000000BF5
+
+dump MCU signature
+:0000000CF4
+
+dump MCU fuse
+:0000000DF3
+
+:0000000EF2
+
+:0000000FF1

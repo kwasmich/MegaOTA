@@ -26,9 +26,9 @@ $(EXECUTABLE).eep: $(EXECUTABLE).elf
 
 
 flash: all
-	# avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -U flash:w:$(EXECUTABLE).hex:i
-	# -U flash:w:../boot/boot.hex:i -U eeprom:w:$(EXECUTABLE).eep:i
-	avrdude -c arduino -P $(PORT) -p $(MCU_DUDE) -b115200 -U flash:w:$(EXECUTABLE).hex:i
+	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -U flash:w:$(EXECUTABLE).hex:i -U flash:w:../boot/boot.hex:i
+	# -U eeprom:w:$(EXECUTABLE).eep:i
+	# avrdude -c arduino -P $(PORT) -p $(MCU_DUDE) -b115200 -U flash:w:$(EXECUTABLE).hex:i
 	# -U eeprom:w:$(EXECUTABLE).eep:i
 
 
@@ -40,9 +40,18 @@ fuse:
 erase:
 	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -e
 
+erase_eep:
+	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -U eeprom:w:_empty.eep:i
+
+
 
 dump:
 	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -U flash:r:dump.hex:i -U eeprom:r:dump.eep:i
+	# avrdude -c arduino -P $(PORT) -p $(MCU_DUDE) -B 1MHz -U flash:r:dump.hex:i -U eeprom:r:dump.eep:i
+
+
+dump_eep:
+	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -U eeprom:r:dump.eep:i
 	# avrdude -c arduino -P $(PORT) -p $(MCU_DUDE) -B 1MHz -U flash:r:dump.hex:i -U eeprom:r:dump.eep:i
 
 

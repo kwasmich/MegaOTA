@@ -27,4 +27,9 @@
 #define VALUE(x) VALUE_TO_STRING(x)
 #define MACRO_VALUE(var) #var " = "  VALUE(var)
 
+#define max(a,b) \
+({ typeof (a) _a = (a); \
+   typeof (b) _b = (b); \
+   _a > _b ? _a : _b; })
+
 #endif /* macros_h */

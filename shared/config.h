@@ -27,6 +27,12 @@
 //#define SPI_EEPROM_24BIT
 //#define SPI_STDOUT
 
+// TIME
+#define TIME_WDT
+//#define TIME_TC0
+//#define TIME_TC1
+//#define TIME_TC2
+
 // UART
 #define UART_BAUD 19200
 #define UART_RX_BUFFER_SIZE 4

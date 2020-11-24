@@ -13,7 +13,7 @@ MAIN_OTA_START  = 0x3800
 WRITE_OTA_START = 0x7000
 BOOT_OTA_START  = 0x7400
 BOOT_START      = 0x7800
-WRITE_START     = 0x7c00
+WRITE_START     = 0x7C00
 FLASH_END       = 0x8000
 MAIN_END        = $(shell printf "0x%04x\n" $$(($(MAIN_OTA_START) - 1)))
 MAIN_OTA_END    = $(shell printf "0x%04x\n" $$(($(WRITE_OTA_START) - 1)))
@@ -21,6 +21,21 @@ WRITE_OTA_END   = $(shell printf "0x%04x\n" $$(($(BOOT_OTA_START) - 1)))
 BOOT_OTA_END    = $(shell printf "0x%04x\n" $$(($(BOOT_START) - 1)))
 BOOT_END        = $(shell printf "0x%04x\n" $$(($(WRITE_START) - 1)))
 WRITE_END       = $(shell printf "0x%04x\n" $$(($(FLASH_END) - 1)))
+
+# MAIN_OTA_START  = 0x0000
+# MAIN_OTA_END    = 0x37FF
+# MAIN_START      = 0x3800
+# MAIN_END        = 0x6FFF
+# WRITE_START     = 0x7000
+# WRITE_END       = 0x73FF
+# BOOT_START      = 0x7400
+# BOOT_END        = 0x77FF
+# BOOT_OTA_START  = 0x7800
+# BOOT_OTA_END    = 0x7BFF
+# WRITE_OTA_START = 0x7C00
+# WRITE_OTA_END   = 0x7FFF
+# FLASH_END       = 0x8000
+
 
 CFLAGS = -Wall -Wpedantic -Waddr-space-convert -Wno-main -Os -MMD -mmcu=$(MCU) -DF_CPU=8000000UL -I../shared/
 LDFLAGS = -mrelax

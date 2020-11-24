@@ -45,6 +45,8 @@ void debug_dump_pgm(void);
 void debug_dump_mem(void);
 void debug_clear_mem(void);
 void debug_dump_eep(void);
+void debug_dump_signature(void);
+void debug_dump_fuse(void);
 
 
 #endif /* debug_h */

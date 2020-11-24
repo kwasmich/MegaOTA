@@ -9,6 +9,7 @@
 #include "config.h"
 #include "debug.h"
 
+#include <avr/boot.h>
 #include <avr/eeprom.h>
 #include <avr/interrupt.h>
 #include <avr/pgmspace.h>
@@ -35,7 +36,7 @@ void debug_dump_pgm() {
         printf(" %02X\n", chksum);
     } while (addr < (uint8_t *)FLASHEND);
 
-    puts(":00000001FF");
+    puts(":00 0000 01 FF");
 }
 
 
@@ -60,7 +61,7 @@ void debug_dump_mem() {
         }
     } while (addr < (uint8_t *)RAMEND);
 
-    puts(":00000001FF");
+    puts(":00 0000 01 FF");
 
     printf("  __data_start: %03X\n", (uintptr_t)&__data_start);
     printf("    __data_end: %03X\n", (uintptr_t)&__data_end);
@@ -106,7 +107,41 @@ void debug_dump_eep() {
         printf(" %02X\n", chksum);
     } while (addr < (uint8_t *)E2END);
 
-    puts(":00000001FF");
+    puts(":00 0000 01 FF");
 }
 
 
+
+void debug_dump_signature() {
+    printf("%02" PRIXPTR ": %02X (Sig 1)\n", (uintptr_t)0, boot_signature_byte_get(0));
+    printf("%02" PRIXPTR ": %02X (Sig 2)\n", (uintptr_t)2, boot_signature_byte_get(2));
+    printf("%02" PRIXPTR ": %02X (Sig 3)\n", (uintptr_t)4, boot_signature_byte_get(4));
+    printf("%02" PRIXPTR ": %02X (RC Oscillator Calibration)\n", (uintptr_t)1, boot_signature_byte_get(1));
+
+    uint8_t *addr = (uint8_t *)0x0000;
+
+    do {
+        uint8_t chksum = 0x00 - IHEX_DATA_MAX - ((uintptr_t)addr & 0xFF) - ((uintptr_t)addr >> 8);
+        printf(":%02X %04" PRIXPTR " 00 ", IHEX_DATA_MAX, (uintptr_t)addr);
+
+        for (uint8_t i = 0; i < IHEX_DATA_MAX; i++) {
+            uint8_t d = boot_signature_byte_get(addr);
+            chksum -= d;
+            printf("%02X", d);
+            addr++;
+        }
+
+        printf(" %02X\n", chksum);
+    } while (addr < (uint8_t *)0x80);
+
+    puts(":00 0000 01 FF");
+}
+
+
+
+void debug_dump_fuse() {
+    printf("     low: %02X\n", boot_lock_fuse_bits_get(GET_LOW_FUSE_BITS));
+    printf("    lock: %02X\n", boot_lock_fuse_bits_get(GET_LOCK_BITS));
+    printf("extended: %02X\n", boot_lock_fuse_bits_get(GET_EXTENDED_FUSE_BITS));
+    printf("    high: %02X\n", boot_lock_fuse_bits_get(GET_HIGH_FUSE_BITS));
+}

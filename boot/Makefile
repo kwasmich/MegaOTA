@@ -45,6 +45,10 @@ fuse:
 	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -U lfuse:w:0xFF:m -U hfuse:w:0xD2:m -U efuse:w:0xFA:m -U lock:w:0x3F:m
 
 
+erase:
+	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -e
+
+
 dump:
 	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -U flash:r:dump.hex:i -U eeprom:r:dump.eep:i
 
