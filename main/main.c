@@ -189,27 +189,30 @@ static void parser(uint8_t c) {
 
     if (ihex_parse_async(&ihex, c)) {
         if (ihex.chksum_valid) {
+            puts("\tOK");
             switch (ihex.type) {
                 case 0x00:
                     update_page_add(&ublock, ihex.len, ihex.data, ihex.offset);
 
-                    printf("base: %04x\n", ublock.base_address);
+//                    printf("base: %04x\n", ublock.base_address);
+//
+//                    for (int i = 0; i < SPM_PAGESIZE; i++) {
+//                        printf("%02x ", ublock.data[i]);
+//
+//                        if ((i & 0xF) == 0xF) {
+//                            puts("");
+//                        }
+//                    }
 
-                    for (int i = 0; i < SPM_PAGESIZE; i++) {
-                        printf("%02x ", ublock.data[i]);
-
-                        if ((i & 0xF) == 0xF) {
-                            puts("");
-                        }
-                    }
-
-                    break;
+                    return;
+//                    break;
 
                 case 0x06:
-                    puts("writing to PROGMEM...");
+//                    puts("writing to PROGMEM...");
                     update_write_page(&ublock);
-                    puts("DONE");
-                    break;
+//                    puts("DONE");
+                    return;
+//                    break;
 
                 case 0x16:
                 {
