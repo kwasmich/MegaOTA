@@ -1,7 +1,7 @@
 PORT=`find /dev/cu.wchusbserial* /dev/cu.usbserial* /dev/cu.usbmodem* -print -quit`
 
 
-CFLAGS = -Wall -Wpedantic -Waddr-space-convert -Wno-main -Os -MMD -mmcu=$(MCU) -DF_CPU=8000000UL -I../shared/
+CFLAGS = -Wall -Wpedantic -Os -MMD -I../shared/
 LDFLAGS = -mrelax
 
 # strip dead code
