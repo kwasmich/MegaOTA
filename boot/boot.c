@@ -87,13 +87,6 @@
 #   define ADDR_WRITE     (ADDR_BOOT + NUM_BOOT_PAGES * SPM_PAGESIZE)
 #endif
 
-#pragma message MACRO_VALUE(ADDR_MAIN_OTA)
-#pragma message MACRO_VALUE(ADDR_WRITE_OTA)
-#pragma message MACRO_VALUE(ADDR_BOOT_OTA)
-#pragma message MACRO_VALUE(ADDR_BOOT)
-#pragma message MACRO_VALUE(ADDR_WRITE)
-#warning MACRO_VALUE(ADDR_WRITE)
-
 
 
 static uint8_t read_byte(uint16_t const address) {
@@ -144,11 +137,11 @@ void main(void) __attribute__((OS_main, section(".init9")));
 static void update(uint16_t const dstAddr, uint16_t const srcAddr, uint8_t numPages) {
     const uint8_t sreg = SREG;
     cli();
+    boot_spm_busy_wait();
+    eeprom_busy_wait();
 
     while (numPages) {
         numPages--;
-        boot_spm_busy_wait();
-        eeprom_busy_wait();
         uint16_t dstAddress = dstAddr + (SPM_PAGESIZE * numPages);
         uint16_t srcAddress = srcAddr + (SPM_PAGESIZE * numPages);
 
@@ -161,7 +154,7 @@ static void update(uint16_t const dstAddr, uint16_t const srcAddr, uint8_t numPa
         boot_spm_busy_wait();                                                   // Wait until the memory is erased.
         boot_page_write(dstAddress);                                            // Store buffer in flash page.
         boot_spm_busy_wait();                                                   // Wait until the memory is written.
-        boot_rww_enable();
+        boot_rww_enable();                                                      // erase and write disable RWW section, but we need it for reading
     }
 
     SREG = sreg;
@@ -275,14 +268,8 @@ void main() {
         // update
         update(ADDR_MAIN, ADDR_MAIN_OTA, up.main_page_count);
         update(ADDR_WRITE, ADDR_WRITE_OTA, up.write_page_count);
-
-//        update(ADDR_MAIN_OTA - SPM_PAGESIZE * 3, ADDR_MAIN_OTA, 3);
         wdt_soft_reset();
     }
-
-//    goto error_3;
-
-//    DDRB = _BV(PB5);
 
     BIT_TGL(PORTB, _BV(PB5));
     _delay_ms(500);
