@@ -40,6 +40,12 @@
 
 
 
+static void wdt_soft_reset() {
+    wdt_enable(WDTO_15MS);
+    while (true);
+}
+
+
 // this is smaller than the version from <util/crc16.h>
 // CRC-16/MODBUS
 static uint16_t crc16_update(uint16_t crc, uint8_t const a) {
@@ -63,41 +69,6 @@ uint8_t eeprom EEMEM = 129;
 
 
 void main(void) __attribute__((OS_main, section(".init9")));
-
-
-
-static void setup() {
-    clock_prescale_set(clock_div_2);                                            // simulate 8MHz device
-    power_all_disable();                                                        // disable all components to save power - enable as required
-
-    DDRB = _BV(PB5);
-
-//    spi_init();
-//    nrf24_init();
-    uart_init_async(0x00);
-//    lcd_init();
-    time_init();
-
-    puts("READY");
-}
-
-
-
-static bool isSignatureMatching(const Update_t * const up) {
-    uint32_t sig = ((uint32_t)boot_signature_byte_get(0) << 16) bitor ((uint32_t)boot_signature_byte_get(2) << 8) bitor boot_signature_byte_get(4);
-    uint32_t usig = ((uint32_t)up->signature[0] << 16) bitor ((uint32_t)up->signature[1] << 8) bitor up->signature[2];
-    return sig == usig;
-}
-
-
-
-static bool areFusesMatching(const Update_t * const up) {
-    uint16_t fuse = (boot_lock_fuse_bits_get(GET_HIGH_FUSE_BITS) << 8) bitor boot_lock_fuse_bits_get(GET_LOW_FUSE_BITS);
-    uint16_t ufuse = (up->hfuse << 8) bitor up->lfuse;
-    // uint8_t efuse = boot_lock_fuse_bits_get(GET_EXTENDED_FUSE_BITS);
-    // uint8_t lock  = boot_lock_fuse_bits_get(GET_LOCK_BITS);
-    return fuse == ufuse;
-}
 
 
 
@@ -136,6 +107,59 @@ static uint16_t read_word(uint16_t const address) {
     val = pgm_read_word(address);
 #endif
     return val;
+}
+
+
+
+static void setup() {
+    clock_prescale_set(clock_div_2);                                            // simulate 8MHz device
+    power_all_disable();                                                        // disable all components to save power - enable as required
+
+    DDRB = _BV(PB5);
+
+//    spi_init();
+//    nrf24_init();
+    uart_init_async(0x00);
+//    lcd_init();
+    time_init();
+
+    puts("READY");
+
+//    uint8_t numPages = 112;
+//    uint16_t src = 0x3800;
+//    uint16_t dst = 0x0000;
+//
+//    while (numPages) {
+//        numPages--;
+//        uint16_t srcAddress = SPM_PAGESIZE * (src + numPages);
+//        uint16_t dstAddress = SPM_PAGESIZE * (dst + numPages);
+//
+//        printf("0x%04X -> 0x%04X\n", srcAddress, dstAddress);
+//
+//        for (uint8_t i = 0; i < SPM_PAGESIZE; i += 2) {
+//            uint16_t val = read_word(srcAddress + i);
+//            printf("%04X\n", val);
+//            // boot_page_fill(dstAddress + i, val);
+//        }
+//    }
+}
+
+
+
+static bool isSignatureMatching(const Update_t * const up) {
+    uint32_t sig = ((uint32_t)boot_signature_byte_get(0) << 16) bitor ((uint32_t)boot_signature_byte_get(2) << 8) bitor boot_signature_byte_get(4);
+    uint32_t usig = ((uint32_t)up->signature[0] << 16) bitor ((uint32_t)up->signature[1] << 8) bitor up->signature[2];
+    return sig == usig;
+}
+
+
+
+static bool areFusesMatching(const Update_t * const up) {
+    uint16_t fuse = (boot_lock_fuse_bits_get(GET_HIGH_FUSE_BITS) << 8) bitor boot_lock_fuse_bits_get(GET_LOW_FUSE_BITS);
+    uint16_t ufuse = (up->hfuse << 8) bitor up->lfuse;
+    // uint8_t efuse = boot_lock_fuse_bits_get(GET_EXTENDED_FUSE_BITS);
+    // uint8_t lock  = boot_lock_fuse_bits_get(GET_LOCK_BITS);
+    return fuse == ufuse;
 }
 
 
@@ -214,6 +238,24 @@ static void parser(uint8_t c) {
                     return;
 //                    break;
 
+                case 0x10:
+                {
+                    uint8_t numPages = 2;
+
+                    while (numPages) {
+                        numPages--;
+                        uint16_t srcAddress = SPM_PAGESIZE * (ihex.data[0] + numPages);
+                        uint16_t dstAddress = SPM_PAGESIZE * (ihex.data[1] + numPages);
+
+                        for (uint8_t i = 0; i < SPM_PAGESIZE; i += 2) {
+                            uint16_t val = read_word(srcAddress + i);
+                            printf("0x%04X -> 0x%04X (%04X)\n", srcAddress + i, dstAddress + i, val);
+                            // boot_page_fill(dstAddress + i, val);
+                        }
+                    }
+                }
+                    break;
+
                 case 0x16:
                 {
                     Update_t *up = (Update_t *)&ihex.data;
@@ -221,6 +263,8 @@ static void parser(uint8_t c) {
                     puts("writing to EEPROM...");
                     eeprom_update_block(up, (void *)ADDR_EE_UPDATE, sizeof(*up));
                     puts("DONE");
+                    puts("rebooting...");
+                    wdt_soft_reset();
                 }
                     break;
 
@@ -481,8 +525,8 @@ static void loop() {
     uint32_t now = s_time_ms; // atomic
     sei();
 
-    if (now >= before + 100) {
-        before += 100;
+    if (now >= before + 1000) {
+        before += 1000;
         BIT_TGL(PORTB, _BV(PB5));
     }
 
