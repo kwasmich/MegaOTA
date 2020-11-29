@@ -1,9 +1,11 @@
+include ../Makefile.config
 include ../Makefile.common
 
 LDFLAGS += -nostartfiles
 
 
 SOURCES = boot.c\
+		../shared/crypto/crc.c \
 		../shared/i2c/at24cxx.c \
 		../shared/i2c/i2c.c \
 		../shared/spi/spi.c \
@@ -22,7 +24,7 @@ $(EXECUTABLE).elf: $(OBJECTS)
 
 
 $(EXECUTABLE).hex: $(EXECUTABLE).elf
-	$(OBJCOPY) -R .eeprom -O ihex $< $@
+	$(OBJCOPY) -j .text -j .data -j .boot_guard -O ihex $< $@
 	$(AVRSIZE) $<
 
 
@@ -32,13 +34,13 @@ $(EXECUTABLE).eep: $(EXECUTABLE).elf
 
 %.o: %.c
 	$(CC) $(CFLAGS) -o $@ -c $<
-	# $(CC) $(CFLAGS) -S -o $@.s -c $<
-	# $(CC) $(CFLAGS) -E -o $@.pre -c $<
+# $(CC) $(CFLAGS) -S -o $@.s -c $<
+# $(CC) $(CFLAGS) -E -o $@.pre -c $<
 
 
 flash: all
 	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -U flash:w:$(EXECUTABLE).elf:e
-	# -U flash:w:../main/main.elf:e
+# -U flash:w:../main/main.elf:e
 
 
 fuse:

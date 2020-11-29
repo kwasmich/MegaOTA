@@ -1,4 +1,6 @@
+include ../Makefile.config
 include ../Makefile.common
+
 
 EXECUTABLE=main
 
@@ -14,7 +16,7 @@ $(EXECUTABLE).elf: $(OBJECTS)
 
 
 $(EXECUTABLE).hex: $(EXECUTABLE).elf
-	$(OBJCOPY) -R .eeprom -O ihex $< $@
+	$(OBJCOPY) -j .text -j .data -j .main_guard -O ihex $< $@
 	$(AVRSIZE) $<
 
 
@@ -33,8 +35,8 @@ update_boot.bin: ../boot/boot.elf
 
 %.o: %.c
 	$(CC) $(CFLAGS) -o $@ -c $<
-	# $(CC) $(CFLAGS) -S -o $@.s -c $<
-	# $(CC) $(CFLAGS) -E -o $@.pre -c $<
+# $(CC) $(CFLAGS) -S -o $@.s -c $<
+# $(CC) $(CFLAGS) -E -o $@.pre -c $<
 
 
 .PHONY: flash

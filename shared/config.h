@@ -6,9 +6,9 @@
 //#define EXTERNAL_MEMORY EXTERNAL_MEMORY_SPI
 
 
-#define NUM_PAGES       ((FLASHEND + 1UL) / SPM_PAGESIZE)                       // 256
-#define NUM_WRITE_PAGES 8
-#define NUM_BOOT_PAGES  8
+//#define NUM_PAGES       ((FLASHEND + 1UL) / SPM_PAGESIZE)                       // 256
+//#define NUM_WRITE_PAGES 8
+//#define NUM_BOOT_PAGES  8
 
 
 // I²C

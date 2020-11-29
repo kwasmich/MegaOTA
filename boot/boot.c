@@ -10,6 +10,7 @@
 #include "config.h"
 #include "macros.h"
 #include "update.h"
+//#include "crypto/crc.h"
 
 #ifdef EXTERNAL_MEMORY
 #   if EXTERNAL_MEMORY == EXTERNAL_MEMORY_I2C
@@ -33,10 +34,8 @@
 #include <util/delay.h>
 
 
-#pragma message MACRO_VALUE(NUM_PAGES)
 #pragma message MACRO_VALUE(FLASHEND)
 #pragma message MACRO_VALUE(SPM_PAGESIZE)
-#pragma message MACRO_VALUE(NUM_PAGES2)
 
 #define IN_RANGE(X, Y, Z) (((X) <= (Y)) and ((Y) <= (Z)))
 
@@ -61,31 +60,74 @@
 
 
 
-#ifdef EXTERNAL_MEMORY
-#   define NUM_WRITE_OTA_PAGES 0
-#   define NUM_BOOT_OTA_PAGES  0
-#   define NUM_MAIN_PAGES      (NUM_PAGES - NUM_WRITE_PAGES - NUM_BOOT_PAGES - NUM_WRITE_OTA_PAGES - NUM_BOOT_OTA_PAGES)
-#   define NUM_MAIN_OTA_PAGES  0
+//#ifdef EXTERNAL_MEMORY
+//#   define NUM_WRITE_OTA_PAGES 0
+//#   define NUM_BOOT_OTA_PAGES  0
+//#   define NUM_MAIN_PAGES      (NUM_PAGES - NUM_WRITE_PAGES - NUM_BOOT_PAGES - NUM_WRITE_OTA_PAGES - NUM_BOOT_OTA_PAGES)
+//#   define NUM_MAIN_OTA_PAGES  0
+//
+//#   define ADDR_MAIN      0x0000
+//#   define ADDR_WRITE     (ADDR_MAIN + NUM_MAIN_PAGES * SPM_PAGESIZE)
+//#   define ADDR_BOOT      (ADDR_WRITE + NUM_WRITE_PAGES * SPM_PAGESIZE)
+//#   define ADDR_MAIN_OTA  ADDR_MAIN
+//#   define ADDR_WRITE_OTA ADDR_WRITE
+//#   define ADDR_BOOT_OTA  ADDR_BOOT
+//#else
+//#   define NUM_WRITE_OTA_PAGES NUM_WRITE_PAGES
+//#   define NUM_BOOT_OTA_PAGES  NUM_BOOT_PAGES
+//#   define NUM_MAIN_PAGES      ((NUM_PAGES - NUM_WRITE_PAGES - NUM_BOOT_PAGES - NUM_WRITE_OTA_PAGES - NUM_BOOT_OTA_PAGES) / 2)
+//#   define NUM_MAIN_OTA_PAGES  NUM_MAIN_PAGES
+//
+//#   define ADDR_MAIN      0x0000
+//#   define ADDR_MAIN_OTA  (ADDR_MAIN + NUM_MAIN_PAGES * SPM_PAGESIZE)
+//#   define ADDR_WRITE_OTA (ADDR_MAIN_OTA + NUM_MAIN_OTA_PAGES * SPM_PAGESIZE)
+//#   define ADDR_BOOT_OTA  (ADDR_WRITE_OTA + NUM_WRITE_OTA_PAGES * SPM_PAGESIZE)
+//#   define ADDR_BOOT      (ADDR_BOOT_OTA + NUM_BOOT_OTA_PAGES * SPM_PAGESIZE)
+//#   define ADDR_WRITE     (ADDR_BOOT + NUM_BOOT_PAGES * SPM_PAGESIZE)
+//#endif
 
-#   define ADDR_MAIN      0x0000
-#   define ADDR_WRITE     (ADDR_MAIN + NUM_MAIN_PAGES * SPM_PAGESIZE)
-#   define ADDR_BOOT      (ADDR_WRITE + NUM_WRITE_PAGES * SPM_PAGESIZE)
-#   define ADDR_MAIN_OTA  ADDR_MAIN
-#   define ADDR_WRITE_OTA ADDR_WRITE
-#   define ADDR_BOOT_OTA  ADDR_BOOT
-#else
-#   define NUM_WRITE_OTA_PAGES NUM_WRITE_PAGES
-#   define NUM_BOOT_OTA_PAGES  NUM_BOOT_PAGES
-#   define NUM_MAIN_PAGES      ((NUM_PAGES - NUM_WRITE_PAGES - NUM_BOOT_PAGES - NUM_WRITE_OTA_PAGES - NUM_BOOT_OTA_PAGES) / 2)
-#   define NUM_MAIN_OTA_PAGES  NUM_MAIN_PAGES
 
-#   define ADDR_MAIN      0x0000
-#   define ADDR_MAIN_OTA  (ADDR_MAIN + NUM_MAIN_PAGES * SPM_PAGESIZE)
-#   define ADDR_WRITE_OTA (ADDR_MAIN_OTA + NUM_MAIN_OTA_PAGES * SPM_PAGESIZE)
-#   define ADDR_BOOT_OTA  (ADDR_WRITE_OTA + NUM_WRITE_OTA_PAGES * SPM_PAGESIZE)
-#   define ADDR_BOOT      (ADDR_BOOT_OTA + NUM_BOOT_OTA_PAGES * SPM_PAGESIZE)
-#   define ADDR_WRITE     (ADDR_BOOT + NUM_BOOT_PAGES * SPM_PAGESIZE)
+#if ! defined ADDR_MAIN_START
+#   error ADDR_MAIN_START is undefined
+#elif ! defined ADDR_MAIN_END
+#   error ADDR_MAIN_END is undefined
+#elif ! defined ADDR_MAIN_OTA_START
+#   error ADDR_MAIN_OTA_START is undefined
+#elif ! defined ADDR_MAIN_OTA_END
+#   error ADDR_MAIN_OTA_END is undefined
+#elif ! defined ADDR_WRITE_START
+#   error ADDR_WRITE_START is undefined
+#elif ! defined ADDR_WRITE_END
+#   error ADDR_WRITE_END is undefined
+#elif ! defined ADDR_WRITE_OTA_START
+#   error ADDR_WRITE_OTA_START is undefined
+#elif ! defined ADDR_WRITE_OTA_END
+#   error ADDR_WRITE_OTA_END is undefined
+#elif ! defined ADDR_BOOT_START
+#   error BOOTWRITE_START is undefined
+#elif ! defined ADDR_BOOT_END
+#   error ADDR_BOOT_END is undefined
+#elif ! defined ADDR_BOOT_OTA_START
+#   error ADDR_BOOT_OTA_START is undefined
+#elif ! defined ADDR_BOOT_OTA_END
+#   error ADDR_BOOT_OTA_END is undefined
 #endif
+
+#pragma message MACRO_VALUE(ADDR_MAIN_START)
+#pragma message MACRO_VALUE(ADDR_MAIN_END)
+#pragma message MACRO_VALUE(ADDR_MAIN_OTA_START)
+#pragma message MACRO_VALUE(ADDR_MAIN_OTA_END)
+#pragma message MACRO_VALUE(ADDR_WRITE_START)
+#pragma message MACRO_VALUE(ADDR_WRITE_END)
+#pragma message MACRO_VALUE(ADDR_WRITE_OTA_START)
+#pragma message MACRO_VALUE(ADDR_WRITE_OTA_END)
+#pragma message MACRO_VALUE(ADDR_BOOT_START)
+#pragma message MACRO_VALUE(ADDR_BOOT_END)
+#pragma message MACRO_VALUE(ADDR_BOOT_OTA_START)
+#pragma message MACRO_VALUE(ADDR_BOOT_OTA_END)
+
+#define NUM_MAIN_PAGES ((ADDR_MAIN_END - ADDR_MAIN_START) / SPM_PAGESIZE)
+#define NUM_WRITE_PAGES ((ADDR_WRITE_END - ADDR_WRITE_START) / SPM_PAGESIZE)
 
 
 
@@ -196,19 +238,20 @@ static uint16_t crc16_update(uint16_t crc, uint8_t const a) {
 
 
 static bool isSignatureMatching(const Update_t * const up) {
-    uint32_t sig = ((uint32_t)boot_signature_byte_get(0) << 16) bitor ((uint32_t)boot_signature_byte_get(2) << 8) bitor boot_signature_byte_get(4);
-    uint32_t usig = ((uint32_t)up->signature[0] << 16) bitor ((uint32_t)up->signature[1] << 8) bitor up->signature[2];
-    return sig == usig;
+    if (boot_signature_byte_get(0) != up->signature[0]) return false;
+    if (boot_signature_byte_get(2) != up->signature[1]) return false;
+    if (boot_signature_byte_get(4) != up->signature[2]) return false;
+    return true;
 }
 
 
 
 static bool areFusesMatching(const Update_t * const up) {
-    uint16_t fuse = (boot_lock_fuse_bits_get(GET_HIGH_FUSE_BITS) << 8) bitor boot_lock_fuse_bits_get(GET_LOW_FUSE_BITS);
-    uint16_t ufuse = (up->hfuse << 8) bitor up->lfuse;
-    // uint8_t efuse = boot_lock_fuse_bits_get(GET_EXTENDED_FUSE_BITS);
-    // uint8_t lock  = boot_lock_fuse_bits_get(GET_LOCK_BITS);
-    return fuse == ufuse;
+    if (boot_lock_fuse_bits_get(GET_LOW_FUSE_BITS) != up->lfuse) return false;
+    if (boot_lock_fuse_bits_get(GET_LOCK_BITS) != up->lock) return false;
+    if (boot_lock_fuse_bits_get(GET_EXTENDED_FUSE_BITS) != up->efuse) return false;
+    if (boot_lock_fuse_bits_get(GET_HIGH_FUSE_BITS) != up->hfuse) return false;
+    return true;
 }
 
 
@@ -227,23 +270,25 @@ static bool isCRCMatching(uint16_t const addr, uint8_t const numPages, uint16_t 
 
 
 void main() {
-    uint8_t k = 0;
+    uint8_t err;
     DDRB = _BV(PB5);
 
     Update_t up;
     eeprom_read_block(&up, (void *)ADDR_EE_UPDATE, sizeof(up));
 
     if (IN_RANGE(1, up.main_page_count, NUM_MAIN_PAGES) or IN_RANGE(1, up.write_page_count, NUM_WRITE_PAGES)) {                                                                         // there seems to be an update available
-        eeprom_update_byte((void *)ADDR_EE_UPDATE + offsetof(Update_t, main_page_count), 0);
-        eeprom_update_byte((void *)ADDR_EE_UPDATE + offsetof(Update_t, write_page_count), 0);
+        eeprom_update_byte((uint8_t *)ADDR_EE_UPDATE + offsetof(Update_t, main_page_count), 0);
+        eeprom_update_byte((uint8_t *)ADDR_EE_UPDATE + offsetof(Update_t, write_page_count), 0);
         eeprom_busy_wait();
 
         if (!isSignatureMatching(&up)) {                                        // signature mismatch
-            goto error_1;
+            err = 2;
+            goto error;
         }
 
         if (!areFusesMatching(&up)) {                                           // fuse mismatch
-            goto error_2;
+            err = 4;
+            goto error;
         }
 
 #ifdef EXTERNAL_MEMORY
@@ -257,17 +302,19 @@ void main() {
 #   endif
 #endif
 
-        if (!isCRCMatching(ADDR_MAIN_OTA, up.main_page_count, up.main_crc)) {   // crc mismatch
-            goto error_3;
+        if (!isCRCMatching(ADDR_MAIN_OTA_START, up.main_page_count, up.main_crc)) {   // crc mismatch
+            err = 6;
+            goto error;
         }
 
-        if (!isCRCMatching(ADDR_WRITE_OTA, up.write_page_count, up.write_crc)) {// crc mismatch
-            goto error_4;
+        if (!isCRCMatching(ADDR_WRITE_OTA_START, up.write_page_count, up.write_crc)) {// crc mismatch
+            err = 8;
+            goto error;
         }
 
         // update
-        update(ADDR_MAIN, ADDR_MAIN_OTA, up.main_page_count);
-        update(ADDR_WRITE, ADDR_WRITE_OTA, up.write_page_count);
+        update(ADDR_MAIN_START, ADDR_MAIN_OTA_START, up.main_page_count);
+        update(ADDR_WRITE_START, ADDR_WRITE_OTA_START, up.write_page_count);
         wdt_soft_reset();
     }
 
@@ -286,21 +333,14 @@ void main() {
 start:
     asm("jmp 0x0000");
 
-error_4:
-    k+=2;
-error_3:
-    k+=2;
-error_2:
-    k+=2;
-error_1:
-    k+=2;
-
+error:
     while (true) {
-        for (uint8_t i = 0; i < k; i++) {
+        for (uint8_t i = 0; i < err; i++) {
             BIT_TGL(PORTB, _BV(PB5));
             _delay_ms(500);
         }
         _delay_ms(5000);
     }
+    return;
 }
 

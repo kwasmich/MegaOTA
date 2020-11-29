@@ -7,41 +7,23 @@ CC = avr-gcc
 AVRSIZE = avr-size
 PORT=`find /dev/cu.wchusbserial* /dev/cu.usbserial* /dev/cu.usbmodem* -print -quit`
 
-
-MAIN_START      = 0x0000
-MAIN_OTA_START  = 0x3800
-WRITE_OTA_START = 0x7000
-BOOT_OTA_START  = 0x7400
-BOOT_START      = 0x7800
-WRITE_START     = 0x7C00
-FLASH_END       = 0x8000
-MAIN_END        = $(shell printf "0x%04x\n" $$(($(MAIN_OTA_START) - 1)))
-MAIN_OTA_END    = $(shell printf "0x%04x\n" $$(($(WRITE_OTA_START) - 1)))
-WRITE_OTA_END   = $(shell printf "0x%04x\n" $$(($(BOOT_OTA_START) - 1)))
-BOOT_OTA_END    = $(shell printf "0x%04x\n" $$(($(BOOT_START) - 1)))
-BOOT_END        = $(shell printf "0x%04x\n" $$(($(WRITE_START) - 1)))
-WRITE_END       = $(shell printf "0x%04x\n" $$(($(FLASH_END) - 1)))
-
-# MAIN_OTA_START  = 0x0000
-# MAIN_OTA_END    = 0x37FF
-# MAIN_START      = 0x3800
-# MAIN_END        = 0x6FFF
-# WRITE_START     = 0x7000
-# WRITE_END       = 0x73FF
-# BOOT_START      = 0x7400
-# BOOT_END        = 0x77FF
-# BOOT_OTA_START  = 0x7800
-# BOOT_OTA_END    = 0x7BFF
-# WRITE_OTA_START = 0x7C00
-# WRITE_OTA_END   = 0x7FFF
-# FLASH_END       = 0x8000
-
-
 CFLAGS = -Wall -Wpedantic -Waddr-space-convert -Wno-main -Os -MMD -mmcu=$(MCU) -DF_CPU=8000000UL -I../shared/
 LDFLAGS = -mrelax
 
 # strip dead code
-CFLAGS += -ffunction-sections -fdata-sections -fshort-enums
+CFLAGS += -ffunction-sections -fdata-sections -fshort-enums \
+            -DADDR_MAIN_START=$(MAIN_START) \
+            -DADDR_MAIN_END="$(MAIN_END) + 2" \
+            -DADDR_MAIN_OTA_START=$(MAIN_OTA_START) \
+            -DADDR_MAIN_OTA_END="$(MAIN_OTA_END) + 2" \
+            -DADDR_WRITE_START=$(WRITE_START) \
+            -DADDR_WRITE_END="$(WRITE_END) + 2UL" \
+            -DADDR_WRITE_OTA_START=$(WRITE_OTA_START) \
+            -DADDR_WRITE_OTA_END="$(WRITE_OTA_END) + 2" \
+            -DADDR_BOOT_START=$(BOOT_START) \
+            -DADDR_BOOT_END="$(BOOT_END) + 2" \
+            -DADDR_BOOT_OTA_START=$(BOOT_OTA_START) \
+            -DADDR_BOOT_OTA_END="$(BOOT_OTA_END) + 2"
 LDFLAGS += -Wl,--gc-sections \
 			-Wl,--print-gc-sections \
 			-Wl,--undefined=boot_version \
