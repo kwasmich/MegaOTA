@@ -16,7 +16,7 @@ $(EXECUTABLE).elf: $(OBJECTS)
 
 
 $(EXECUTABLE).hex: $(EXECUTABLE).elf
-	$(OBJCOPY) -j .text -j .data -j .main_guard -O ihex $< $@
+	$(OBJCOPY) -j .text -j .data -j .main_guard -j .write -j .write_guard -O ihex $< $@
 	$(AVRSIZE) $<
 
 
