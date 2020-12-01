@@ -12,7 +12,8 @@ CFLAGS += -ffunction-sections -fdata-sections -fshort-enums
 # LDFLAGS += -flto
 
 
-SOURCES=$(wildcard *.c)
+SOURCES=$(wildcard *.c) \
+	../shared/crypto/crc.c
 OBJECTS=$(SOURCES:%.c=%.o)
 DEPS=$(sort $(patsubst %, %.deps, $(OBJECTS)))
 

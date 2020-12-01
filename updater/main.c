@@ -10,7 +10,7 @@
 
 
 #include "mmapHelper.h"
-#include "crc.h"
+#include "crypto/crc.h"
 #include "config.h"
 
 

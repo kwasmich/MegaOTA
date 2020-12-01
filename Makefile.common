@@ -23,7 +23,11 @@ CFLAGS += -ffunction-sections -fdata-sections -fshort-enums \
             -DADDR_BOOT_START=$(BOOT_START) \
             -DADDR_BOOT_END="$(BOOT_END) + 2" \
             -DADDR_BOOT_OTA_START=$(BOOT_OTA_START) \
-            -DADDR_BOOT_OTA_END="$(BOOT_OTA_END) + 2"
+            -DADDR_BOOT_OTA_END="$(BOOT_OTA_END) + 2" \
+            -DLFUSE=$(LFUSE) \
+            -DHFUSE=$(HFUSE) \
+            -DEFUSE=$(EFUSE) \
+            -DLOCKFUSE=$(LOCKFUSE)
 LDFLAGS += -Wl,--gc-sections \
 			-Wl,--print-gc-sections \
 			-Wl,--undefined=boot_version \

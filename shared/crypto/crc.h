@@ -9,7 +9,7 @@
 #ifndef crc_h
 #define crc_h
 
-#include <stdio.h>
+#include <stdint.h>
 
 uint16_t crc16_update(uint16_t crc, uint8_t const a);
 

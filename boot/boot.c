@@ -26,6 +26,7 @@
 #include <avr/boot.h>
 #include <avr/eeprom.h>
 #include <avr/interrupt.h>
+#include <avr/lock.h>
 #include <avr/pgmspace.h>
 #include <avr/wdt.h>
 #include <iso646.h>
@@ -40,22 +41,18 @@
 #define IN_RANGE(X, Y, Z) (((X) <= (Y)) and ((Y) <= (Z)))
 
 
-//#pragma mark -- fuse
-//
-//FUSES = {
-//    .low =      (0xff),
-//    .high =     (FUSE_BOOTRST & FUSE_BOOTSZ0 & FUSE_EESAVE & FUSE_SPIEN),
-//    .extended = (FUSE_BODLEVEL0)
-//};
-//
-//LOCKBITS = (0x3f);
-//
-//
-//
-//#pragma mark -- eeprom
-//
-//char myEepromString[] EEMEM = "Hello World!";
 
+FUSES = {
+    .low =      LFUSE,
+    .high =     HFUSE,
+    .extended = EFUSE
+};
+
+LOCKBITS = LOCKFUSE;
+
+
+
+//char myEepromString[] EEMEM = "Hello World!";
 
 
 
