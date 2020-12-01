@@ -42,15 +42,15 @@ update_boot.bin: ../boot/boot.elf
 .PHONY: flash
 flash: all
 	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -U flash:w:$(EXECUTABLE).hex:i -U flash:w:../boot/boot.hex:i
-	# -U eeprom:w:$(EXECUTABLE).eep:i
-	# avrdude -c arduino -P $(PORT) -p $(MCU_DUDE) -b115200 -U flash:w:$(EXECUTABLE).hex:i
-	# -U eeprom:w:$(EXECUTABLE).eep:i
+# -U eeprom:w:$(EXECUTABLE).eep:i
+# avrdude -c arduino -P $(PORT) -p $(MCU_DUDE) -b115200 -U flash:w:$(EXECUTABLE).hex:i
+# -U eeprom:w:$(EXECUTABLE).eep:i
 
 
 .PHONY: fuse
 fuse:
 	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -U lfuse:r:-:i -U hfuse:r:-:i -U efuse:r:-:i -U lock:r:-:i
-	# avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -U lock:w:0x3F:m
+# avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -U lock:w:0x3F:m
 
 
 .PHONY: erase
@@ -66,13 +66,13 @@ erase_eep:
 .PHONY: dump
 dump:
 	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -U flash:r:dump.hex:i -U eeprom:r:dump.eep:i
-	# avrdude -c arduino -P $(PORT) -p $(MCU_DUDE) -B 1MHz -U flash:r:dump.hex:i -U eeprom:r:dump.eep:i
+# avrdude -c arduino -P $(PORT) -p $(MCU_DUDE) -B 1MHz -U flash:r:dump.hex:i -U eeprom:r:dump.eep:i
 
 
 .PHONY: dump_eep
 dump_eep:
 	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -U eeprom:r:dump.eep:i
-	# avrdude -c arduino -P $(PORT) -p $(MCU_DUDE) -B 1MHz -U flash:r:dump.hex:i -U eeprom:r:dump.eep:i
+# avrdude -c arduino -P $(PORT) -p $(MCU_DUDE) -B 1MHz -U flash:r:dump.hex:i -U eeprom:r:dump.eep:i
 
 
 .PHONY: serial
@@ -83,8 +83,8 @@ serial:
 .PHONY: disassembly
 disassembly:
 	avr-objdump -s -m avr5 -D $(EXECUTABLE).hex
-	# avr-objdump -s -m avr5 -D $(EXECUTABLE).hex
-	# avr-objdump -s -m avr5 -D dump_fash.hex
+# avr-objdump -s -m avr5 -D $(EXECUTABLE).hex
+# avr-objdump -s -m avr5 -D dump_fash.hex
 
 
 .PHONY: clean
