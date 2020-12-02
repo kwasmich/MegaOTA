@@ -243,25 +243,44 @@ int main(int argc,char** argv)
 
 
     MapFile_s bin;
-    initMapFile(&bin, optMArg, MAP_RO);
-    uint16_t main_offset = strtoul(optMoffArg, NULL, 0);
-    uint16_t main_crc;
-    uint8_t main_page_count;
-    updateSection(&main_crc, &main_page_count, tty_fd, &bin, main_offset);
-    printf("CRC-16: 0x%04X\n", main_crc);
-    printf("Offset: 0x%04hx\n", main_offset);
-    printf("Pages : %d\n", main_page_count);
-    freeMapFile(&bin);
 
-    initMapFile(&bin, optWArg, MAP_RO);
-    uint16_t write_offset = strtoul(optWoffArg, NULL, 0);
-    uint16_t write_crc;
-    uint8_t write_page_count;
-    updateSection(&write_crc, &write_page_count, tty_fd, &bin, write_offset);
-    printf("CRC-16: 0x%04X\n", write_crc);
-    printf("Offset: 0x%04hx\n", write_offset);
-    printf("Pages : %d\n", write_page_count);
-    freeMapFile(&bin);
+    uint16_t main_crc = 0xFFFF;
+    uint8_t main_page_count = 0;
+    uint16_t write_crc = 0xFFFF;
+    uint8_t write_page_count = 0;
+    uint16_t boot_crc = 0xFFFF;
+    uint8_t boot_page_count = 0;
+
+    if (optM && optMArg) {
+        initMapFile(&bin, optMArg, MAP_RO);
+        uint16_t main_offset = strtoul(optMoffArg, NULL, 0);
+
+        updateSection(&main_crc, &main_page_count, tty_fd, &bin, main_offset);
+        printf("CRC-16: 0x%04X\n", main_crc);
+        printf("Offset: 0x%04hx\n", main_offset);
+        printf("Pages : %d\n", main_page_count);
+        freeMapFile(&bin);
+    }
+
+    if (optW && optWArg) {
+        initMapFile(&bin, optWArg, MAP_RO);
+        uint16_t write_offset = strtoul(optWoffArg, NULL, 0);
+        updateSection(&write_crc, &write_page_count, tty_fd, &bin, write_offset);
+        printf("CRC-16: 0x%04X\n", write_crc);
+        printf("Offset: 0x%04hx\n", write_offset);
+        printf("Pages : %d\n", write_page_count);
+        freeMapFile(&bin);
+    }
+
+    if (optB && optBArg) {
+        initMapFile(&bin, optBArg, MAP_RO);
+        uint16_t boot_offset = strtoul(optBoffArg, NULL, 0);
+        updateSection(&boot_crc, &boot_page_count, tty_fd, &bin, boot_offset);
+        printf("CRC-16: 0x%04X\n", boot_crc);
+        printf("Offset: 0x%04hx\n", boot_offset);
+        printf("Pages : %d\n", boot_page_count);
+        freeMapFile(&bin);
+    }
 
     Update_t up = { 0 };
     up.main_crc = main_crc;
