@@ -24,13 +24,13 @@ $(EXECUTABLE).eep: $(EXECUTABLE).elf
 	$(OBJCOPY) -j .eeprom -O ihex --change-section-lma .eeprom=0 $< $@
 
 update_main.bin: $(EXECUTABLE).elf
-	$(OBJCOPY) -j .text -j .data -j .main_guard -O binary $< $@
+	$(OBJCOPY) -j .text -j .data -j .main_guard --gap-fill 0xFF -O binary $< $@
 
 update_write.bin: $(EXECUTABLE).elf
-	$(OBJCOPY) -j .write -j .write_guard -O binary $< $@
+	$(OBJCOPY) -j .write -j .write_guard --gap-fill 0xFF -O binary $< $@
 
 update_boot.bin: ../boot/boot.elf
-	$(OBJCOPY) -j .text -j .boot_guard -O binary $< $@
+	$(OBJCOPY) -j .text -j .boot_guard --gap-fill 0xFF -O binary $< $@
 
 
 %.o: %.c
