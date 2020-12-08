@@ -79,14 +79,19 @@ static void parser(uint8_t c) {
 
     if (ihex_parse_async(&ihex, c)) {
         if (ihex.chksum_valid) {
-            puts("\tOK");
             switch (ihex.type) {
                 case 0x00:
                     update_page_add(&ublock, ihex.len, ihex.data, ihex.offset);
+                    puts("\tOK");
                     return;
 
                 case 0x06:
-                    update_write_page(&ublock);
+                    if (update_write_ota_page(&ublock)) {
+                        puts("\tOK");
+                    } else {
+                        puts("\tERR");
+                    }
+
                     return;
 
                 case 0x16:

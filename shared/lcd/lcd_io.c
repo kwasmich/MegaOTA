@@ -66,6 +66,7 @@ static void write4(uint8_t data) {
 
 
 #ifdef LCD_INTERFACE_8_BIT
+#error TDOD
 static void write8(uint8_t data) {
     BIT_SET(LCD_CTRL_PORT, _BV(LCD_E_PIN));
     if (data & 0x01) BIT_SET(LCD_DATA_PORT, _BV(LCD_DB4_PIN));

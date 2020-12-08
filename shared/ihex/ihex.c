@@ -6,6 +6,9 @@
 //  Copyright © 2019 Michael Kwasnicki. All rights reserved.
 //
 
+// https://www.fischl.de/hex_checksum_calculator/
+
+
 #include "ihex.h"
 
 #include <string.h>
