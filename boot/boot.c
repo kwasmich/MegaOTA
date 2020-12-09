@@ -39,7 +39,7 @@ void update_write_page(const update_page_t * const update_block);               
 #pragma message MACRO_VALUE(FLASHEND)
 #pragma message MACRO_VALUE(SPM_PAGESIZE)
 
-#define IN_RANGE(X, Y, Z) (((X) <= (Y)) and ((Y) <= (Z)))
+//#define IN_RANGE(X, Y, Z) (((X) <= (Y)) and ((Y) <= (Z)))
 
 
 
@@ -183,37 +183,37 @@ static void update(uint16_t const dstAddr, uint16_t const srcAddr, uint8_t numPa
         numPages--;
         page.base_address = dstAddr + numPages * SPM_PAGESIZE;
 
-//        for (uint8_t i = 0; i < SPM_PAGESIZE; i++) {
-//            page.data[i] = read_byte(srcAddr + numPages * SPM_PAGESIZE + i);
-//        }
+        for (uint8_t i = 0; i < SPM_PAGESIZE; i++) {
+            page.data[i] = read_byte(srcAddr + (uint16_t)numPages * SPM_PAGESIZE + i);
+        }
 
-//        for (uint8_t i = 0; i < SPM_PAGESIZE / 2; i++) {
-//            page.word[i] = read_word(srcAddr + numPages * SPM_PAGESIZE + i * 2);
-//        }
+        // for (uint8_t i = 0; i < SPM_PAGESIZE / 2; i++) {
+        //    page.word[i] = read_word(srcAddr + (uint16_t)numPages * SPM_PAGESIZE + i * 2);
+        // }
 
-        memcpy_P(page.data, srcAddr + numPages * SPM_PAGESIZE, SPM_PAGESIZE);
+        // memcpy_P(page.data, srcAddr + (uint16_t)numPages * SPM_PAGESIZE, SPM_PAGESIZE);
         update_write_page(&page);
     }
 
-//    boot_spm_busy_wait();
-//    eeprom_busy_wait();
-//
-//    while (numPages) {
-//        numPages--;
-//        uint16_t dstAddress = dstAddr + (SPM_PAGESIZE * numPages);
-//        uint16_t srcAddress = srcAddr + (SPM_PAGESIZE * numPages);
-//
-//        for (uint8_t i = 0; i < SPM_PAGESIZE; i += 2) {
-//            uint16_t val = read_word(srcAddress + i);
-//            boot_page_fill(dstAddress + i, val);
-//        }
-//
-//        boot_page_erase(dstAddress);
-//        boot_spm_busy_wait();                                                   // Wait until the memory is erased.
-//        boot_page_write(dstAddress);                                            // Store buffer in flash page.
-//        boot_spm_busy_wait();                                                   // Wait until the memory is written.
-//        boot_rww_enable();                                                      // erase and write disable RWW section, but we need it for reading
-//    }
+    // boot_spm_busy_wait();
+    // eeprom_busy_wait();
+    //
+    // while (numPages) {
+    //     numPages--;
+    //     uint16_t dstAddress = dstAddr + (SPM_PAGESIZE * numPages);
+    //     uint16_t srcAddress = srcAddr + (SPM_PAGESIZE * numPages);
+    //
+    //     for (uint8_t i = 0; i < SPM_PAGESIZE; i += 2) {
+    //         uint16_t val = read_word(srcAddress + i);
+    //         boot_page_fill(dstAddress + i, val);
+    //     }
+    //
+    //     boot_page_erase(dstAddress);
+    //     boot_spm_busy_wait();                                                   // Wait until the memory is erased.
+    //     boot_page_write(dstAddress);                                            // Store buffer in flash page.
+    //     boot_spm_busy_wait();                                                   // Wait until the memory is written.
+    //     boot_rww_enable();                                                      // erase and write disable RWW section, but we need it for reading
+    // }
 
     SREG = sreg;
 }
@@ -292,9 +292,8 @@ void main() {
     Update_t up;
     eeprom_read_block(&up, (void *)ADDR_EE_UPDATE, sizeof(up));
 
-    if (IN_RANGE(1, up.main_page_count, NUM_MAIN_PAGES) or IN_RANGE(1, up.write_page_count, NUM_WRITE_PAGES)) {                                                                         // there seems to be an update available
+    if (up.main_page_count) {                                                   // there seems to be an update available
         eeprom_update_byte((uint8_t *)ADDR_EE_UPDATE + offsetof(Update_t, main_page_count), 0);
-        eeprom_update_byte((uint8_t *)ADDR_EE_UPDATE + offsetof(Update_t, write_page_count), 0);
         eeprom_busy_wait();
 
         if (!isSignatureMatching(&up)) {                                        // signature mismatch
@@ -318,19 +317,19 @@ void main() {
 #   endif
 #endif
 
-        if (!isCRCMatching(ADDR_MAIN_OTA_START, up.main_page_count, up.main_crc)) {   // crc mismatch
+        if (!isCRCMatching(ADDR_MAIN_OTA_START, NUM_MAIN_PAGES, up.main_crc)) {   // crc mismatch
             err = 6;
             goto error;
         }
 
-        if (!isCRCMatching(ADDR_WRITE_OTA_START, up.write_page_count, up.write_crc)) {// crc mismatch
+        if (!isCRCMatching(ADDR_WRITE_OTA_START, NUM_WRITE_PAGES, up.write_crc)) {// crc mismatch
             err = 8;
             goto error;
         }
 
         // update
-        update(ADDR_MAIN_START, ADDR_MAIN_OTA_START, up.main_page_count);
-        update(ADDR_WRITE_START, ADDR_WRITE_OTA_START, up.write_page_count);
+        update(ADDR_MAIN_START, ADDR_MAIN_OTA_START, NUM_MAIN_PAGES);
+        update(ADDR_WRITE_START, ADDR_WRITE_OTA_START, NUM_WRITE_PAGES);
         wdt_soft_reset();
     }
 
