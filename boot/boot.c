@@ -10,6 +10,7 @@
 #include "config.h"
 #include "macros.h"
 #include "update.h"
+void update_write_page(const update_page_t * const update_block);               // override section attribute
 //#include "crypto/crc.h"
 
 #ifdef EXTERNAL_MEMORY
@@ -128,6 +129,12 @@ LOCKBITS = LOCKFUSE;
 
 
 
+// naked: no entry and exit code (no stack)
+void wdt_init(void) __attribute__((naked, section(".init3")));
+void main(void) __attribute__((OS_main, section(".init9")));
+
+
+
 static uint8_t read_byte(uint16_t const address) {
     uint8_t val;
 #ifdef EXTERNAL_MEMORY
@@ -167,44 +174,48 @@ static uint16_t read_word(uint16_t const address) {
 
 
 
-// naked: no entry and exit code (no stack)
-void wdt_init(void) __attribute__((naked, section(".init3")));
-void main(void) __attribute__((OS_main, section(".init9")));
-
-
-
 static void update(uint16_t const dstAddr, uint16_t const srcAddr, uint8_t numPages) {
+    update_page_t page;
     const uint8_t sreg = SREG;
     cli();
-    boot_spm_busy_wait();
-    eeprom_busy_wait();
 
     while (numPages) {
         numPages--;
-        uint16_t dstAddress = dstAddr + (SPM_PAGESIZE * numPages);
-        uint16_t srcAddress = srcAddr + (SPM_PAGESIZE * numPages);
+        page.base_address = dstAddr + numPages * SPM_PAGESIZE;
 
-        for (uint8_t i = 0; i < SPM_PAGESIZE; i += 2) {
-            uint16_t val = read_word(srcAddress + i);
-            boot_page_fill(dstAddress + i, val);
-        }
+//        for (uint8_t i = 0; i < SPM_PAGESIZE; i++) {
+//            page.data[i] = read_byte(srcAddr + numPages * SPM_PAGESIZE + i);
+//        }
 
-        boot_page_erase(dstAddress);
-        boot_spm_busy_wait();                                                   // Wait until the memory is erased.
-        boot_page_write(dstAddress);                                            // Store buffer in flash page.
-        boot_spm_busy_wait();                                                   // Wait until the memory is written.
-        boot_rww_enable();                                                      // erase and write disable RWW section, but we need it for reading
+//        for (uint8_t i = 0; i < SPM_PAGESIZE / 2; i++) {
+//            page.word[i] = read_word(srcAddr + numPages * SPM_PAGESIZE + i * 2);
+//        }
+
+        memcpy_P(page.data, srcAddr + numPages * SPM_PAGESIZE, SPM_PAGESIZE);
+        update_write_page(&page);
     }
 
+//    boot_spm_busy_wait();
+//    eeprom_busy_wait();
+//
+//    while (numPages) {
+//        numPages--;
+//        uint16_t dstAddress = dstAddr + (SPM_PAGESIZE * numPages);
+//        uint16_t srcAddress = srcAddr + (SPM_PAGESIZE * numPages);
+//
+//        for (uint8_t i = 0; i < SPM_PAGESIZE; i += 2) {
+//            uint16_t val = read_word(srcAddress + i);
+//            boot_page_fill(dstAddress + i, val);
+//        }
+//
+//        boot_page_erase(dstAddress);
+//        boot_spm_busy_wait();                                                   // Wait until the memory is erased.
+//        boot_page_write(dstAddress);                                            // Store buffer in flash page.
+//        boot_spm_busy_wait();                                                   // Wait until the memory is written.
+//        boot_rww_enable();                                                      // erase and write disable RWW section, but we need it for reading
+//    }
+
     SREG = sreg;
-}
-
-
-
-void wdt_init() {
-    // wdt_reset(); // not doing this should be safe as it will be called in wdt_disable()
-    MCUSR = 0x00;
-    wdt_disable();
 }
 
 
@@ -212,24 +223,6 @@ void wdt_init() {
 static void wdt_soft_reset() {
     wdt_enable(WDTO_15MS);
     while (true);
-}
-
-
-
-// this is smaller than the version from <util/crc16.h>
-// CRC-16/MODBUS
-static uint16_t crc16_update(uint16_t crc, uint8_t const a) {
-    crc ^= a;
-
-    for (uint8_t i = 0; i < 8; i++) {
-        if (crc bitand 1) {
-            crc = (crc >> 1) xor 0xA001;
-        } else {
-            crc = (crc >> 1);
-        }
-    }
-
-    return crc;
 }
 
 
@@ -253,6 +246,24 @@ static bool areFusesMatching(const Update_t * const up) {
 
 
 
+// this is smaller than the version from <util/crc16.h>
+// CRC-16/MODBUS
+static uint16_t crc16_update(uint16_t crc, uint8_t const a) {
+    crc ^= a;
+
+    for (uint8_t i = 0; i < 8; i++) {
+        if (crc bitand 1) {
+            crc = (crc >> 1) xor 0xA001;
+        } else {
+            crc = (crc >> 1);
+        }
+    }
+
+    return crc;
+}
+
+
+
 static bool isCRCMatching(uint16_t const addr, uint8_t const numPages, uint16_t const dst_CRC) {
     uint16_t crc = 0xFFFF;
 
@@ -262,6 +273,14 @@ static bool isCRCMatching(uint16_t const addr, uint8_t const numPages, uint16_t 
     }
 
     return crc == dst_CRC;
+}
+
+
+
+void wdt_init() {
+    // wdt_reset(); // not doing this should be safe as it will be called in wdt_disable()
+    MCUSR = 0x00;
+    wdt_disable();
 }
 
 

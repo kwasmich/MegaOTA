@@ -54,6 +54,19 @@ uint8_t eeprom EEMEM = 129;
 void main(void) __attribute__((OS_main, section(".init9")));
 
 
+void update_print_page(const update_page_t * const ublock) {
+    printf("base: %04x\n", ublock->base_address);
+
+    for (int i = 0; i < SPM_PAGESIZE; i++) {
+        printf("%02x ", ublock->data[i]);
+
+        if ((i & 0xF) == 0xF) {
+            puts("");
+        }
+    }
+}
+
+
 
 static void setup() {
     clock_prescale_set(clock_div_2);                                            // simulate 8MHz device
@@ -97,11 +110,11 @@ static void parser(uint8_t c) {
                 case 0x16:
                 {
                     Update_t *up = (Update_t *)&ihex.data;
-
-                    puts("writing to EEPROM...");
+                    // puts("writing to EEPROM...");
                     eeprom_update_block(up, (void *)ADDR_EE_UPDATE, sizeof(*up));
-                    puts("DONE");
-                    puts("rebooting...");
+                    // puts("DONE");
+                    // puts("rebooting...");
+                    puts("\tOK");
                     wdt_soft_reset();
                 }
                     break;
@@ -238,8 +251,8 @@ static void loop() {
     uint32_t now = s_time_ms; // atomic
     sei();
 
-    if (now >= before + 1000) {
-        before += 1000;
+    if (now >= before + 100) {
+        before += 100;
         BIT_TGL(PORTB, _BV(PB5));
     }
 

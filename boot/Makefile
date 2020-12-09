@@ -11,6 +11,7 @@ SOURCES = boot.c \
 		../shared/spi/spi.c \
 		../shared/spi/sst25vfxx.c \
 		../shared/section_guards.c \
+		../shared/update.c
 #		../shared/uart/uart.c
 OBJECTS = $(SOURCES:%.c=%.o)
 DEPS    = $(SOURCES:%.c=%.d)

@@ -14,11 +14,11 @@
 
 
 
-bool isValidBaseAddress(uint16_t const in_BASE_ADDRESS) {
+static bool isValidBaseAddress(uint16_t const in_BASE_ADDRESS) {
     switch (in_BASE_ADDRESS) {
-        case ADDR_MAIN_OTA_START ... ADDR_MAIN_OTA_END - 2:
-        case ADDR_WRITE_OTA_START ... ADDR_WRITE_OTA_END - 2:
-        case ADDR_BOOT_OTA_START ... ADDR_BOOT_OTA_END - 2:
+        case ADDR_MAIN_OTA_START ... ADDR_MAIN_OTA_END - 1:
+        case ADDR_WRITE_OTA_START ... ADDR_WRITE_OTA_END - 1:
+        case ADDR_BOOT_OTA_START ... ADDR_BOOT_OTA_END - 1:
             return true;
         default:
             return false;
@@ -48,9 +48,19 @@ bool update_write_ota_page(const update_page_t * const page) {
         return false;
     }
 
-    const uint16_t dstAddress = page->base_address;
     const uint8_t sreg = SREG;
     cli();
+    update_write_page(page);
+    SREG = sreg;
+    return true;
+}
+
+
+
+void update_write_page(const update_page_t * const page) {
+#warning handle external storage
+
+    const uint16_t dstAddress = page->base_address;
     boot_spm_busy_wait();
     eeprom_busy_wait();
 
@@ -63,41 +73,4 @@ bool update_write_ota_page(const update_page_t * const page) {
     boot_page_write(dstAddress);    // Store buffer in flash page.
     boot_spm_busy_wait();           // Wait until the memory is written.
     boot_rww_enable();
-    SREG = sreg;
-    return true;
 }
-
-
-//void update_write_page(const update_page_t * const page) {
-//#warning handle external storage
-//
-//    const uint16_t dstAddress = page->base_address;
-//    boot_spm_busy_wait();
-//    eeprom_busy_wait();
-//
-//    for (uint8_t i = 0; i < SPM_PAGESIZE / 2; i++) {
-//        boot_page_fill(dstAddress + (i * 2), page->word[i]);
-//    }
-//
-//    boot_page_erase(dstAddress);
-//    boot_spm_busy_wait();           // Wait until the memory is erased.
-//    boot_page_write(dstAddress);    // Store buffer in flash page.
-//    boot_spm_busy_wait();           // Wait until the memory is written.
-//    boot_rww_enable();
-//}
-//
-//
-//
-//bool update_write_ota_page(const update_page_t * const page) {
-//#warning handle external storage
-//
-//    if (!isValidBaseAddress(page->base_address)) {
-//        return false;
-//    }
-//
-//    const uint8_t sreg = SREG;
-//    cli();
-//    update_write_page(page);
-//    SREG = sreg;
-//    return true;
-//}

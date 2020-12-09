@@ -289,10 +289,10 @@ int main(int argc,char** argv)
     up.write_page_count = write_page_count;
     up.boot_crc = 0xFFFF;
     up.boot_page_count = 0;
-    up.lfuse = 0xFF;
-    up.hfuse = 0xD2;
-    up.efuse = 0xFA;
-    up.lock = 0xFF;
+    up.lfuse = LFUSE;
+    up.hfuse = HFUSE;
+    up.efuse = EFUSE;
+    up.lock = LOCKFUSE;
     up.signature[0] = 0x1E;
     up.signature[1] = 0x95;
     up.signature[2] = 0x0F;

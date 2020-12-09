@@ -48,8 +48,8 @@ typedef struct {
 
 
 void update_page_add(update_page_t * const page, const uint8_t len, uint8_t data[static len], const uint16_t in_OFFSET);
-bool update_write_ota_page(const update_page_t * const update_block) __attribute__((section(".write")));
-// void update_write_page(const update_page_t * const update_block) __attribute__((section(".write")));
+bool update_write_ota_page(const update_page_t * const update_block);
+void update_write_page(const update_page_t * const update_block) __attribute__((section(".write")));
 
 
 
