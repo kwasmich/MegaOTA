@@ -251,8 +251,8 @@ static void loop() {
     uint32_t now = s_time_ms; // atomic
     sei();
 
-    if (now >= before + 100) {
-        before += 100;
+    if (now >= before + 1000) {
+        before += 1000;
         BIT_TGL(PORTB, _BV(PB5));
     }
 

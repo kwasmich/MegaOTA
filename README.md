@@ -46,3 +46,11 @@ dump MCU fuse
 :0000000EF2
 
 :0000000FF1
+
+
+
+source ../base_config.sh
+make -C ../boot clean && make -C ../boot
+make clean && make && make update
+make -C ../updater clean && make -C ../updater
+../updater/updater -d /dev/tty.usbserial-1460 -m ./update_main.bin 0x3C00 -w ./update_write.bin 0x7B80
