@@ -292,8 +292,8 @@ void main() {
     Update_t up;
     eeprom_read_block(&up, (void *)ADDR_EE_UPDATE, sizeof(up));
 
-    if (up.main_page_count) {                                                   // there seems to be an update available
-        eeprom_update_byte((uint8_t *)ADDR_EE_UPDATE + offsetof(Update_t, main_page_count), 0);
+    if (up.prog_update) {                                                       // there seems to be an update available
+        eeprom_update_byte((uint8_t *)ADDR_EE_UPDATE + offsetof(Update_t, prog_update), 0);
         eeprom_busy_wait();
 
         if (!isSignatureMatching(&up)) {                                        // signature mismatch

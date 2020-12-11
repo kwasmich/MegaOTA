@@ -47,14 +47,8 @@ flash: all
 # -U eeprom:w:$(EXECUTABLE).eep:i
 
 
-.PHONY: fuse
-fuse:
-	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -U lfuse:r:-:i -U hfuse:r:-:i -U efuse:r:-:i -U lock:r:-:i
-# avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -U lock:w:0x3F:m
-
-
-.PHONY: erase
-erase:
+.PHONY: chip_erase
+chip_erase:
 	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -e
 
 
@@ -63,16 +57,19 @@ erase_eep:
 	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -U eeprom:w:_empty.eep:i
 
 
-.PHONY: dump
+.PHONY: dump_flash
 dump:
-	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -U flash:r:dump.hex:i -U eeprom:r:dump.eep:i
-# avrdude -c arduino -P $(PORT) -p $(MCU_DUDE) -B 1MHz -U flash:r:dump.hex:i -U eeprom:r:dump.eep:i
+	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -U flash:r:dump.hex:i
 
 
 .PHONY: dump_eep
 dump_eep:
 	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -U eeprom:r:dump.eep:i
-# avrdude -c arduino -P $(PORT) -p $(MCU_DUDE) -B 1MHz -U flash:r:dump.hex:i -U eeprom:r:dump.eep:i
+
+
+.PHONY: dump_fuses
+dump_fuse:
+	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -U lfuse:r:-:i -U hfuse:r:-:i -U efuse:r:-:i -U lock:r:-:i
 
 
 .PHONY: serial
@@ -93,7 +90,7 @@ clean:
 	rm -f $(EXECUTABLE).eep
 	rm -f $(EXECUTABLE).elf
 	rm -f $(EXECUTABLE).hex
-	rm -r update_main.bin update_write.bin update_boot.bin
+	-rm -r update_main.bin update_write.bin update_boot.bin
 
 
 -include $(DEPS)

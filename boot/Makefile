@@ -53,7 +53,6 @@ fuse:
 	srec_cat fuses.hex -Intel -crop 0x01 0x02 -offset -0x01 -O hfuse.hex -Intel
 	srec_cat fuses.hex -Intel -crop 0x02 0x03 -offset -0x02 -O efuse.hex -Intel
 	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1kHz -U lfuse:w:lfuse.hex:i -U hfuse:w:hfuse.hex:i -U efuse:w:efuse.hex:i -U lock:w:lock.hex:i
-#	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1kHz -U lfuse:w:0xFF:m -U hfuse:w:0xD2:m -U efuse:w:0xFA:m -U lock:w:0x3F:m
 
 
 .PHONY: dump_fuse

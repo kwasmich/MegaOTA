@@ -31,7 +31,7 @@ export FLASH_END=0x8000
 
 export EXTERNAL_MEMORY=false
 
-export LFUSE=0xFF
+export LFUSE=0xFF #0xE2
 export HFUSE=0xD4
-export EFUSE=0xFA
+export EFUSE=0xFF
 export LOCKFUSE=0xFF

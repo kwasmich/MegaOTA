@@ -12,6 +12,7 @@
 #include "mmapHelper.h"
 #include "crypto/crc.h"
 #include "config.h"
+#include "update_type.h"
 
 
 #include <assert.h>
@@ -25,20 +26,6 @@
 #include <string.h> // needed for memset
 #include <inttypes.h>
 
-
-typedef struct {
-    uint16_t main_crc;
-    uint16_t write_crc;
-    uint16_t boot_crc;
-    uint8_t main_page_count;
-    uint8_t write_page_count;
-    uint8_t boot_page_count;
-    uint8_t lfuse;
-    uint8_t hfuse;
-    uint8_t efuse;
-    uint8_t lock;
-    uint8_t signature[3];
-} __attribute__((packed)) Update_t;
 
 
 #define PAGE_SIZE 128
@@ -245,16 +232,16 @@ int main(int argc,char** argv)
     MapFile_s bin;
 
     uint16_t main_crc = 0xFFFF;
-    uint8_t main_page_count = 0;
     uint16_t write_crc = 0xFFFF;
-    uint8_t write_page_count = 0;
     uint16_t boot_crc = 0xFFFF;
-    uint8_t boot_page_count = 0;
+    bool prog_update = false;
+    bool boot_update = false;
 
     if (optM && optMArg) {
+        uint8_t main_page_count = 0;
         initMapFile(&bin, optMArg, MAP_RO);
         uint16_t main_offset = strtoul(optMoffArg, NULL, 0);
-
+        prog_update = true;
         updateSection(&main_crc, &main_page_count, tty_fd, &bin, main_offset);
         printf("CRC-16: 0x%04X\n", main_crc);
         printf("Offset: 0x%04hx\n", main_offset);
@@ -263,8 +250,10 @@ int main(int argc,char** argv)
     }
 
     if (optW && optWArg) {
+        uint8_t write_page_count = 0;
         initMapFile(&bin, optWArg, MAP_RO);
         uint16_t write_offset = strtoul(optWoffArg, NULL, 0);
+        prog_update = true;
         updateSection(&write_crc, &write_page_count, tty_fd, &bin, write_offset);
         printf("CRC-16: 0x%04X\n", write_crc);
         printf("Offset: 0x%04hx\n", write_offset);
@@ -273,8 +262,10 @@ int main(int argc,char** argv)
     }
 
     if (optB && optBArg) {
+        uint8_t boot_page_count = 0;
         initMapFile(&bin, optBArg, MAP_RO);
         uint16_t boot_offset = strtoul(optBoffArg, NULL, 0);
+        boot_update = true;
         updateSection(&boot_crc, &boot_page_count, tty_fd, &bin, boot_offset);
         printf("CRC-16: 0x%04X\n", boot_crc);
         printf("Offset: 0x%04hx\n", boot_offset);
@@ -284,11 +275,10 @@ int main(int argc,char** argv)
 
     Update_t up = { 0 };
     up.main_crc = main_crc;
-    up.main_page_count = main_page_count;
+    up.prog_update = prog_update;
     up.write_crc = write_crc;
-    up.write_page_count = write_page_count;
     up.boot_crc = 0xFFFF;
-    up.boot_page_count = 0;
+    up.boot_update = boot_update;
     up.lfuse = LFUSE;
     up.hfuse = HFUSE;
     up.efuse = EFUSE;

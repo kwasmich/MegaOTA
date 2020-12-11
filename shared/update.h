@@ -10,6 +10,8 @@
 #ifndef update_h
 #define update_h
 
+#include "update_type.h"
+
 #include <avr/io.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -17,23 +19,6 @@
 
 
 #define ADDR_EE_UPDATE (E2END + 1 - sizeof(Update_t))
-
-
-
-typedef struct {
-    uint16_t main_crc;
-    uint16_t write_crc;
-    uint16_t boot_crc;
-    uint8_t main_page_count;
-    uint8_t write_page_count;
-    uint8_t boot_page_count;
-    uint8_t lfuse;
-    uint8_t hfuse;
-    uint8_t efuse;
-    uint8_t lock;
-    uint8_t signature[3];
-} __attribute__((packed)) Update_t;
-
 
 
 typedef struct {
