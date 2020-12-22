@@ -9,6 +9,15 @@
 #ifndef nrf24_router_h
 #define nrf24_router_h
 
-#include <stdio.h>
+
+#include <stdbool.h>
+#include <stdint.h>
+
+
+
+void nrf24_router_init(void);
+bool nrf24_router_rx(uint8_t * const out_len, uint8_t out_payload[static const 32]);
+
+
 
 #endif /* nrf24_router_h */

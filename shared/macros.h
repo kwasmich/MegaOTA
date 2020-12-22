@@ -11,7 +11,7 @@
 
 #include <iso646.h>
 
-
+#define _BV(bit) (1 << (bit))
 #define _BV2( A, B ) ( _BV( A ) bitor _BV( B ) )
 #define _BV3( A, B, C ) ( _BV2( A, B ) bitor _BV( C ) )
 #define _BV4( A, B, C, D ) ( _BV2( A, B ) bitor _BV2( C, D ) )

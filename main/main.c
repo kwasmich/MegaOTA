@@ -18,6 +18,7 @@
 #include "uart/uart.h"
 #include "nrf24/nrf24.h"
 #include "nrf24/nrf24_io.h"
+#include "nrf24/nrf24_coordinator.h"
 #include "lcd/lcd.h"
 #include "crypto/entropy.h"
 #include "time/time.h"
@@ -75,12 +76,16 @@ static void setup() {
     DDRB = _BV(PB5);
 
 //    spi_init();
-//    nrf24_init();
+    // nrf24_init();
+    nrf24_coordinator_init();
     uart_init_async(0x00);
 //    lcd_init();
     time_init();
 
     puts("READY");
+
+    uint16_t addr = __builtin_return_address(0);
+    printf("0x%04x\n", addr);
 }
 
 
@@ -229,7 +234,22 @@ static void loop() {
         }
     }
 
-    if (nrf24_rx(&p, &len, rx_payload)) {
+//    if (nrf24_rx(&p, &len, rx_payload)) {
+//        puts("received");
+//        printf("pipe: %d\nlen : %d\ndata: ", p, len);
+//
+//        for (uint8_t i = 0; i < len; i++) {
+//            putchar(rx_payload[i]);
+//        }
+//
+//        puts("");
+//
+//        for (uint8_t i = 0; i < len; i++) {
+//            parser(rx_payload[i]);
+//        }
+//    }
+
+    if (nrf24_coordinator_rx(&len, rx_payload)) {
         puts("received");
         printf("pipe: %d\nlen : %d\ndata: ", p, len);
 
@@ -243,7 +263,6 @@ static void loop() {
             parser(rx_payload[i]);
         }
     }
-
 
     static uint32_t before = 0;
 

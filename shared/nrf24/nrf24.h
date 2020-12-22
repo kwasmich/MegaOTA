@@ -31,6 +31,11 @@ void nrf24_debug(void);
 void nrf24_carrier_start(void);
 void nrf24_carrier_stop(void);
 
+void nrf24_set_pipe_address(const uint8_t in_PIPE, const uint8_t in_ADDR);
+void nrf24_enable_pipe(const uint8_t in_PIPE);
+void nrf24_disable_pipe(const uint8_t in_PIPE);
+void nrf24_set_ard(const uint8_t in_ARD);
+
 
 
 #endif /* nrf24_x_h */

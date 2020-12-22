@@ -17,7 +17,7 @@
 //#define I2C_EEPROM_PAGE_SIZE 128
 
 // Intel HEX
-#define IHEX_DATA_MAX 32
+#define IHEX_DATA_MAX 16
 
 // LCD 16x2
 #define LCD_INTERFACE_4_BIT

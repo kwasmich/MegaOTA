@@ -195,7 +195,7 @@ int main(int argc,char** argv)
 //    printf("%s\n", optDArg);
 //    printf("%s (%s)\n", optMArg, optMoffArg);
 
-    int tty_fd = open(optDArg, O_RDWR | O_NONBLOCK);
+    int tty_fd = open(optDArg, O_RDWR | O_NONBLOCK);
 
     if (tty_fd < 0) {
         fprintf(stderr, "Could not open device \"%s\" \n", optDArg);
