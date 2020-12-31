@@ -18,6 +18,6 @@
 void nrf24_router_init(void);
 bool nrf24_router_rx(uint8_t * const out_len, uint8_t out_payload[static const 32]);
 
-
+void nrf24_scan(void);
 
 #endif /* nrf24_router_h */

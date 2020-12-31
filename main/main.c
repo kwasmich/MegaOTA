@@ -19,6 +19,7 @@
 #include "nrf24/nrf24.h"
 #include "nrf24/nrf24_io.h"
 #include "nrf24/nrf24_coordinator.h"
+#include "nrf24/nrf24_router.h"
 #include "lcd/lcd.h"
 #include "crypto/entropy.h"
 #include "time/time.h"
@@ -75,17 +76,27 @@ static void setup() {
 
     DDRB = _BV(PB5);
 
-//    spi_init();
-    // nrf24_init();
-    nrf24_coordinator_init();
     uart_init_async(0x00);
+    puts("SETUP...");
+    spi_init();
+    // nrf24_init();
+
+#ifdef NRF24_ROLE_COORDINATOR
+    nrf24_coordinator_init();
+    nrf24_rx_start();
+#endif
+
+#ifdef NRF24_ROLE_ROUTER
+    nrf24_router_init();
+#endif
+
 //    lcd_init();
     time_init();
 
     puts("READY");
 
-    uint16_t addr = __builtin_return_address(0);
-    printf("0x%04x\n", addr);
+//    uint16_t addr = __builtin_return_address(0);
+//    printf("0x%04x\n", addr);
 }
 
 
@@ -187,53 +198,74 @@ static void loop() {
     if (uart_getchar_async(&c)) {
         parser(c);
 
-        if (c == 'r') {
-            puts("start listening!");
-            nrf24_rx_start();
-        }
-        if (c == 's') {
-            nrf24_rx_stop();
-            puts("stopped listening!");
-        }
-        if (c == 'd') {
-            nrf24_debug();
-        }
-        if (c == 't') {
-            puts("sending…");
-            nrf24_tx(tx_len, payload);
-            tx_len++;
+        switch (c) {
+            case 'r':
+                puts("start listening!");
+                nrf24_rx_start();
+                break;
 
-            if (tx_len > 32) {
-                tx_len = 1;
-            }
-        }
-        if (c == 'z') {
-            BIT_SET(PORTB, _BV(PB1));
-            _delay_us(15);
-            BIT_CLR(PORTB, _BV(PB1));
-        }
-        if (c == 'u') {
-            BIT_SET(PORTB, _BV(PB1));
-        }
-        if (c == 'i') {
-            BIT_CLR(PORTB, _BV(PB1));
-        }
-        if (c == 'q') {
-            puts("clear interrupts");
-            nrf24_clear_interrupts();
-        }
-        if (c == 'w') {
-            puts("clear plos cnt");
-            nrf24_clear_plos_cnt();
-        }
-        if (c == 'n') {
-            nrf24_carrier_start();
-        }
-        if (c == 'm') {
-            nrf24_carrier_stop();
-        }
+            case 's':
+                nrf24_rx_stop();
+                puts("stopped listening!");
+                break;
+
+            case 'd':
+                nrf24_debug();
+                break;
+
+            case 't':
+                puts("sending…");
+                nrf24_tx(tx_len, payload);
+                tx_len++;
+
+                if (tx_len > 32) {
+                    tx_len = 1;
+                }
+
+                break;
+
+            case 'z':
+                BIT_SET(PORTB, _BV(PB1));
+                _delay_us(15);
+                BIT_CLR(PORTB, _BV(PB1));
+                break;
+
+            case 'u':
+                BIT_SET(PORTB, _BV(PB1));
+                break;
+
+            case 'i':
+                BIT_CLR(PORTB, _BV(PB1));
+                break;
+
+            case 'q':
+                puts("clear interrupts");
+                nrf24_clear_interrupts();
+                break;
+
+            case 'w':
+                puts("clear plos cnt");
+                nrf24_clear_plos_cnt();
+                break;
+
+            case 'n':
+                nrf24_carrier_start();
+                break;
+
+            case 'm':
+                nrf24_carrier_stop();
+                break;
+
+            case 'p':
+                nrf24_scan();
+                break;
+
+            default:
+                break;
+        };
     }
 
+    
 //    if (nrf24_rx(&p, &len, rx_payload)) {
 //        puts("received");
 //        printf("pipe: %d\nlen : %d\ndata: ", p, len);
@@ -249,6 +281,7 @@ static void loop() {
 //        }
 //    }
 
+#ifdef NRF24_ROLE_COORDINATOR
     if (nrf24_coordinator_rx(&len, rx_payload)) {
         puts("received");
         printf("pipe: %d\nlen : %d\ndata: ", p, len);
@@ -263,6 +296,32 @@ static void loop() {
             parser(rx_payload[i]);
         }
     }
+#endif
+
+#ifdef NRF24_ROLE_ROUTER
+    if (nrf24_router_rx(&len, rx_payload)) {
+        puts("received");
+        printf("pipe: %d\nlen : %d\ndata: ", p, len);
+
+        for (uint8_t i = 0; i < len; i++) {
+            putchar(rx_payload[i]);
+        }
+
+        puts("");
+
+        for (uint8_t i = 0; i < len; i++) {
+            parser(rx_payload[i]);
+        }
+    }
+#endif
+
+    if (nrf24_tx_done()) {
+        puts("tx done");
+    }
+
+    if (nrf24_tx_fail()) {
+        puts("tx fail");
+    }
 
     static uint32_t before = 0;
 
@@ -270,10 +329,11 @@ static void loop() {
     uint32_t now = s_time_ms; // atomic
     sei();
 
-    if (now >= before + 1000) {
-        before += 1000;
-        BIT_TGL(PORTB, _BV(PB5));
-    }
+    // conflicts with SPI
+//    if (now >= before + 1000) {
+//        before += 1000;
+//        BIT_TGL(PORTB, _BV(PB5));
+//    }
 
 
 //    BIT_SET(PORTB, _BV(PB5));

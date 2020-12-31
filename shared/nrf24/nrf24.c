@@ -30,51 +30,9 @@ static nrf24_register_config_u s_nrf24_config;
 
 
 
-static uint8_t nrf24_get_register_1(const uint8_t in_REGISTER) {
-    if (!(in_REGISTER <= FIFO_STATUS || in_REGISTER == DYNPD || in_REGISTER == FEATURE)) {
-        puts("nrf24_get_register_1 error");
-    }
-
-    return nrf24_io_command_1(R_REGISTER xor in_REGISTER, 0xFF);
-}
-
-
-
-static void nrf24_set_register_1(const uint8_t in_REGISTER, const uint8_t in_DATA) {
-    if (!(in_REGISTER <= FIFO_STATUS || in_REGISTER == DYNPD || in_REGISTER == FEATURE)) {
-        puts("nrf24_set_register_1 error");
-    }
-
-    nrf24_io_command_1(W_REGISTER xor in_REGISTER, in_DATA);
-}
-
-
-
-static void nrf24_get_register_n(const uint8_t in_REGISTER, const uint8_t in_LENGTH, uint8_t out_DATA[static const in_LENGTH]) {
-    if (!(in_REGISTER <= FIFO_STATUS || in_REGISTER == DYNPD || in_REGISTER == FEATURE)) {
-        puts("nrf24_get_register_n error");
-    }
-
-    nrf24_io_command_n(R_REGISTER xor in_REGISTER, in_LENGTH, out_DATA);
-}
-
-
-
-static void nrf24_set_register_n(const uint8_t in_REGISTER, const uint8_t in_LENGTH, const uint8_t in_DATA[static const in_LENGTH]) {
-    if (!(in_REGISTER <= FIFO_STATUS || in_REGISTER == DYNPD || in_REGISTER == FEATURE)) {
-        puts("nrf24_set_register_n error");
-    }
-
-    uint8_t data[in_LENGTH];
-    memcpy(data, in_DATA, in_LENGTH);
-    nrf24_io_command_n(W_REGISTER xor in_REGISTER, in_LENGTH, data);
-}
-
-
-
 static void pwr_up() {
     s_nrf24_config.u8 = nrf24_get_register_1(CONFIG);
-    
+
     if (!s_nrf24_config.PWR_UP) {
         s_nrf24_config.PWR_UP = 1;
         nrf24_set_register_1(CONFIG, s_nrf24_config.u8);
@@ -86,7 +44,7 @@ static void pwr_up() {
 
 static void pwr_down() {
     s_nrf24_config.u8 = nrf24_get_register_1(CONFIG);
-    
+
     if (s_nrf24_config.PWR_UP) {
         s_nrf24_config.PWR_UP = 0;
         nrf24_set_register_1(CONFIG, s_nrf24_config.u8);
@@ -95,9 +53,44 @@ static void pwr_down() {
 
 
 
-static void reset_plos_cnt() {
-    const uint8_t ch = nrf24_get_register_1(RF_CH);
-    nrf24_set_register_1(RF_CH, ch);
+uint8_t nrf24_get_register_1(const uint8_t in_REGISTER) {
+    if (!(in_REGISTER <= FIFO_STATUS || in_REGISTER == DYNPD || in_REGISTER == FEATURE)) {
+        puts("nrf24_get_register_1 error");
+    }
+
+    return nrf24_io_command_1(R_REGISTER xor in_REGISTER, 0xFF);
+}
+
+
+
+void nrf24_set_register_1(const uint8_t in_REGISTER, const uint8_t in_DATA) {
+    if (!(in_REGISTER <= FIFO_STATUS || in_REGISTER == DYNPD || in_REGISTER == FEATURE)) {
+        puts("nrf24_set_register_1 error");
+    }
+
+    nrf24_io_command_1(W_REGISTER xor in_REGISTER, in_DATA);
+}
+
+
+
+void nrf24_get_register_n(const uint8_t in_REGISTER, const uint8_t in_LENGTH, uint8_t out_DATA[static const in_LENGTH]) {
+    if (!(in_REGISTER <= FIFO_STATUS || in_REGISTER == DYNPD || in_REGISTER == FEATURE)) {
+        puts("nrf24_get_register_n error");
+    }
+
+    nrf24_io_command_n(R_REGISTER xor in_REGISTER, in_LENGTH, out_DATA);
+}
+
+
+
+void nrf24_set_register_n(const uint8_t in_REGISTER, const uint8_t in_LENGTH, const uint8_t in_DATA[static const in_LENGTH]) {
+    if (!(in_REGISTER <= FIFO_STATUS || in_REGISTER == DYNPD || in_REGISTER == FEATURE)) {
+        puts("nrf24_set_register_n error");
+    }
+
+    uint8_t data[in_LENGTH];
+    memcpy(data, in_DATA, in_LENGTH);
+    nrf24_io_command_n(W_REGISTER xor in_REGISTER, in_LENGTH, data);
 }
 
 
@@ -105,29 +98,17 @@ static void reset_plos_cnt() {
 void nrf24_clear_interrupts() {
     const nrf24_register_status_u status = { .MAX_RT = 1, .TX_DS = 1, .RX_DR = 1 };
     nrf24_io_command_1(W_REGISTER xor STATUS, status.u8);
+    s_nrf24_io_irq_status.RX_DR = false;
+    s_nrf24_io_irq_status.TX_DS = false;
+    s_nrf24_io_irq_status.MAX_RT = false;
 }
 
 
 
 void nrf24_clear_plos_cnt() {
-    const nrf24_register_rf_ch_u rf_ch = { .RF_CH = 0x2E };
-    nrf24_set_register_1(RF_CH, rf_ch.u8);
+    const uint8_t ch = nrf24_get_register_1(RF_CH);
+    nrf24_set_register_1(RF_CH, ch);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -259,7 +240,7 @@ void nrf24_init() {
     const nrf24_register_en_aa_u en_aa = { .ENAA_P0 = 1, .ENAA_P1 = 1, .ENAA_P2 = 1, .ENAA_P3 = 1, .ENAA_P4 = 1, .ENAA_P5 = 1, };
     const nrf24_register_en_rxaddr_u en_rxaddr = { .ERX_P0 = 1 };               // configure
     const nrf24_register_setup_aw_u setup_aw = { .AW = 0b11 };
-    const nrf24_register_setup_retr_u setup_retr = { .ARC = 0, .ARD = 1 };      // configure ARD ≥ 500µs (1 = 500µs, 15 = 4000µs)
+    const nrf24_register_setup_retr_u setup_retr = { .ARC = 15, .ARD = 1 };      // configure ARD ≥ 500µs (1 = 500µs, 15 = 4000µs)
     const nrf24_register_rf_ch_u rf_ch = { .RF_CH = 0x2E };
     const nrf24_register_rf_setup_u rf_setup = { .RF_DR_LOW = 0, .RF_DR_HIGH = 1, .RF_PWR = 0b00 };
 //    const nrf24_register_rx_pw_u rx_pw = { .RX_PW = 32 };                     // is this required for dynamic payload?
@@ -354,7 +335,7 @@ void nrf24_enable_pipe(const uint8_t in_PIPE) {
     en_rxaddr.u8 = nrf24_get_register_1(EN_RXADDR);
 
     if (!(en_rxaddr.u8 & _BV(in_PIPE))) {
-        BIT_SET(en_rxaddr.u8, in_PIPE);
+        BIT_SET(en_rxaddr.u8, _BV(in_PIPE));
         nrf24_set_register_1(EN_RXADDR, en_rxaddr.u8);
     }
 }
@@ -366,7 +347,7 @@ void nrf24_disable_pipe(const uint8_t in_PIPE) {
     en_rxaddr.u8 = nrf24_get_register_1(EN_RXADDR);
 
     if (en_rxaddr.u8 & _BV(in_PIPE)) {
-        BIT_CLR(en_rxaddr.u8, in_PIPE);
+        BIT_CLR(en_rxaddr.u8, _BV(in_PIPE));
         nrf24_set_register_1(EN_RXADDR, en_rxaddr.u8);
     }
 }

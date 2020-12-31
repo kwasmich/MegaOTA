@@ -344,9 +344,10 @@ void main() {
     _delay_ms(450);
     BIT_TGL(PORTB, _BV(PB5));
     _delay_ms(500);
+    DDRB = 0;
 
 start:
-    asm("jmp 0x0000");
+    __asm__ volatile("jmp 0x0000");
 
 error:
     while (true) {

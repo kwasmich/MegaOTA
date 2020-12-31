@@ -15,6 +15,11 @@
 
 
 
+uint8_t nrf24_get_register_1(const uint8_t in_REGISTER);
+void nrf24_set_register_1(const uint8_t in_REGISTER, const uint8_t in_DATA);
+void nrf24_get_register_n(const uint8_t in_REGISTER, const uint8_t in_LENGTH, uint8_t out_DATA[static const in_LENGTH]);
+void nrf24_set_register_n(const uint8_t in_REGISTER, const uint8_t in_LENGTH, const uint8_t in_DATA[static const in_LENGTH]);
+
 void nrf24_rx_start(void);
 void nrf24_rx_stop(void);
 void nrf24_flush_rx(void);

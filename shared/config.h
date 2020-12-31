@@ -56,3 +56,7 @@
 //#define NRF24_DATA_RATE             NRF24_DATA_RATE_2000
 //#define NRF24_RF_POWER              NRF24_RF_POWER_18DBM
 //#define NRF24_
+
+//#define NRF24_ROLE_COORDINATOR
+#define NRF24_ROLE_ROUTER
+//#define NRF24_ROLE_END_POINT
