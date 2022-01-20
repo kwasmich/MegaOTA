@@ -18,6 +18,7 @@
 #include <iso646.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <util/atomic.h>
 #include <util/delay.h>
 
 
@@ -156,20 +157,19 @@ void nrf24_io_ce_lo() {
 
 
 void nrf24_io_init() {
-    uint8_t sreg = SREG;                                                        // store previous interrupt status
-    cli();                                                                      // disable interrupts
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 #if NRF24_IRQ_INT == INT0
-    BIT_SET(EICRA, _BV(ISC01));                                                 // interrupt on falling edge of INT0
-    BIT_CLR(EICRA, _BV(ISC00));
+        BIT_SET(EICRA, _BV(ISC01));                                                 // interrupt on falling edge of INT0
+        BIT_CLR(EICRA, _BV(ISC00));
 #elif NRF24_IRQ_INT == INT1
-    BIT_SET(EICRA, _BV(ISC11));                                                 // interrupt on falling edge of INT1
-    BIT_CLR(EICRA, _BV(ISC10));
+        BIT_SET(EICRA, _BV(ISC11));                                                 // interrupt on falling edge of INT1
+        BIT_CLR(EICRA, _BV(ISC10));
 #else
 #   error "no interrupt defined!"
 #endif
     
-    BIT_SET(EIMSK, _BV(NRF24_IRQ_INT));                                         // enable interrupt on INTx
-    SREG = sreg;                                                                // restore previous interrupt status
+        BIT_SET(EIMSK, _BV(NRF24_IRQ_INT));                                         // enable interrupt on INTx
+    }
 
     BIT_CLR(DDRD, _BV(NRF24_IRQ_PIN));                                          // IRQ is input
     BIT_SET(DDRB, _BV2(NRF24_CE_PIN, NRF24_CSN_PIN));                           // CE and CSN are outputs

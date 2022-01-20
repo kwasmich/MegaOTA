@@ -10,6 +10,7 @@
 
 #include <avr/boot.h>
 #include <avr/interrupt.h>
+#include <util/atomic.h>
 #include <string.h>
 
 
@@ -48,10 +49,10 @@ bool update_write_ota_page(const update_page_t * const page) {
         return false;
     }
 
-    const uint8_t sreg = SREG;
-    cli();
-    update_write_page(page);
-    SREG = sreg;
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+        update_write_page(page);
+    }
+
     return true;
 }
 

@@ -15,6 +15,7 @@
 
 #include <avr/interrupt.h>
 #include <avr/wdt.h>
+#include <util/atomic.h>
 #include <stdbool.h>
 
 
@@ -29,12 +30,12 @@ ISR(WDT_vect) {
 
 
 void time_wdt_init() {
-    cli();
-    wdt_reset();
-    BIT_SET(WDTCSR, _BV2(WDCE, WDE));
-    WDTCSR = 0;
-    BIT_SET(WDTCSR, _BV(WDIE));
-    sei();
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+        wdt_reset();
+        BIT_SET(WDTCSR, _BV2(WDCE, WDE));
+        WDTCSR = 0;
+        BIT_SET(WDTCSR, _BV(WDIE));
+    }
 }
 
 #endif // TIME_WDT

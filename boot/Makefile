@@ -41,7 +41,7 @@ $(EXECUTABLE).eep: $(EXECUTABLE).elf
 
 .PHONY: flash
 flash: all
-	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -U flash:w:$(EXECUTABLE).elf:e
+	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B $(PRG_SPEED) -U flash:w:$(EXECUTABLE).elf:e
 # -U flash:w:../main/main.elf:e
 
 
@@ -52,22 +52,22 @@ fuse:
 	srec_cat fuses.hex -Intel -crop 0x00 0x01 -offset  0x00 -O lfuse.hex -Intel
 	srec_cat fuses.hex -Intel -crop 0x01 0x02 -offset -0x01 -O hfuse.hex -Intel
 	srec_cat fuses.hex -Intel -crop 0x02 0x03 -offset -0x02 -O efuse.hex -Intel
-	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1kHz -U lfuse:w:lfuse.hex:i -U hfuse:w:hfuse.hex:i -U efuse:w:efuse.hex:i -U lock:w:lock.hex:i
+	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B $(PRG_SPEED) -U lfuse:w:lfuse.hex:i -U hfuse:w:hfuse.hex:i -U efuse:w:efuse.hex:i -U lock:w:lock.hex:i
 
 
 .PHONY: dump_fuse
 dump_fuse:
-	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -U lfuse:r:-:i -U hfuse:r:-:i -U efuse:r:-:i -U lock:r:-:i
+	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B $(PRG_SPEED) -U lfuse:r:-:i -U hfuse:r:-:i -U efuse:r:-:i -U lock:r:-:i
 
 
 .PHONY: chip_erase
 chip_erase:
-	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1kHz -e
+	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B $(PRG_SPEED) -e
 
 
 .PHONY: dump
 dump:
-	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -U flash:r:dump.hex:i -U eeprom:r:dump.eep:i
+	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B $(PRG_SPEED) -U flash:r:dump.hex:i -U eeprom:r:dump.eep:i
 
 
 .PHONY: disassembly

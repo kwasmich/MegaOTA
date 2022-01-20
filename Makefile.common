@@ -1,7 +1,8 @@
 MCU = atmega328p
 MCU_DUDE = atmega328p
-PROGRAMMER=usbtiny
-#PROGRAMMER=avrispmkII
+#PROGRAMMER=usbtiny
+PROGRAMMER=avrispmkII
+PRG_SPEED=8kHz
 OBJCOPY = avr-objcopy
 CC = avr-gcc
 AVRSIZE = avr-size
@@ -55,10 +56,11 @@ LDFLAGS += -Wl,--gc-sections \
 
 
 SOURCES=$(wildcard *.c)\
-        $(wildcard */*.c)\
-        $(wildcard */*/*.c)\
-        $(wildcard ../shared/*.c)\
-        $(wildcard ../shared/*/*.c)\
-        $(wildcard ../shared/*/*/*.c)
-OBJECTS=$(SOURCES:%.c=%.o)
-DEPS=$(sort $(patsubst %, %.deps, $(OBJECTS)))
+	$(wildcard */*.c)\
+	$(wildcard */*/*.c)\
+	$(wildcard ../shared/*.c)\
+	$(wildcard ../shared/*/*.c)\
+	$(wildcard ../shared/*/*/*.c)
+# OBJECTS=$(SOURCES:%.c=%.o)
+OBJECTS=$(patsubst %.c, %.o, $(SOURCES))
+DEPS=$(sort $(patsubst %.o, %.d, $(OBJECTS)))

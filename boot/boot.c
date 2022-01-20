@@ -33,6 +33,7 @@ void update_write_page(const update_page_t * const update_block);               
 #include <iso646.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <util/atomic.h>
 #include <util/delay.h>
 
 
@@ -175,47 +176,45 @@ static uint16_t read_word(uint16_t const address) {
 
 
 static void update(uint16_t const dstAddr, uint16_t const srcAddr, uint8_t numPages) {
-    update_page_t page;
-    const uint8_t sreg = SREG;
-    cli();
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+        update_page_t page;
 
-    while (numPages) {
-        numPages--;
-        page.base_address = dstAddr + numPages * SPM_PAGESIZE;
+        while (numPages) {
+            numPages--;
+            page.base_address = dstAddr + numPages * SPM_PAGESIZE;
 
-        for (uint8_t i = 0; i < SPM_PAGESIZE; i++) {
-            page.data[i] = read_byte(srcAddr + (uint16_t)numPages * SPM_PAGESIZE + i);
+            for (uint8_t i = 0; i < SPM_PAGESIZE; i++) {
+                page.data[i] = read_byte(srcAddr + (uint16_t)numPages * SPM_PAGESIZE + i);
+            }
+
+            // for (uint8_t i = 0; i < SPM_PAGESIZE / 2; i++) {
+            //    page.word[i] = read_word(srcAddr + (uint16_t)numPages * SPM_PAGESIZE + i * 2);
+            // }
+
+            // memcpy_P(page.data, srcAddr + (uint16_t)numPages * SPM_PAGESIZE, SPM_PAGESIZE);
+            update_write_page(&page);
         }
 
-        // for (uint8_t i = 0; i < SPM_PAGESIZE / 2; i++) {
-        //    page.word[i] = read_word(srcAddr + (uint16_t)numPages * SPM_PAGESIZE + i * 2);
+        // boot_spm_busy_wait();
+        // eeprom_busy_wait();
+        //
+        // while (numPages) {
+        //     numPages--;
+        //     uint16_t dstAddress = dstAddr + (SPM_PAGESIZE * numPages);
+        //     uint16_t srcAddress = srcAddr + (SPM_PAGESIZE * numPages);
+        //
+        //     for (uint8_t i = 0; i < SPM_PAGESIZE; i += 2) {
+        //         uint16_t val = read_word(srcAddress + i);
+        //         boot_page_fill(dstAddress + i, val);
+        //     }
+        //
+        //     boot_page_erase(dstAddress);
+        //     boot_spm_busy_wait();                                                   // Wait until the memory is erased.
+        //     boot_page_write(dstAddress);                                            // Store buffer in flash page.
+        //     boot_spm_busy_wait();                                                   // Wait until the memory is written.
+        //     boot_rww_enable();                                                      // erase and write disable RWW section, but we need it for reading
         // }
-
-        // memcpy_P(page.data, srcAddr + (uint16_t)numPages * SPM_PAGESIZE, SPM_PAGESIZE);
-        update_write_page(&page);
     }
-
-    // boot_spm_busy_wait();
-    // eeprom_busy_wait();
-    //
-    // while (numPages) {
-    //     numPages--;
-    //     uint16_t dstAddress = dstAddr + (SPM_PAGESIZE * numPages);
-    //     uint16_t srcAddress = srcAddr + (SPM_PAGESIZE * numPages);
-    //
-    //     for (uint8_t i = 0; i < SPM_PAGESIZE; i += 2) {
-    //         uint16_t val = read_word(srcAddress + i);
-    //         boot_page_fill(dstAddress + i, val);
-    //     }
-    //
-    //     boot_page_erase(dstAddress);
-    //     boot_spm_busy_wait();                                                   // Wait until the memory is erased.
-    //     boot_page_write(dstAddress);                                            // Store buffer in flash page.
-    //     boot_spm_busy_wait();                                                   // Wait until the memory is written.
-    //     boot_rww_enable();                                                      // erase and write disable RWW section, but we need it for reading
-    // }
-
-    SREG = sreg;
 }
 
 

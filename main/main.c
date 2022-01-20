@@ -38,6 +38,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <util/atomic.h>
 #include <util/delay.h>
 
 
@@ -92,6 +93,7 @@ static void setup() {
 
 //    lcd_init();
     time_init();
+    sei();
 
     puts("READY");
 
@@ -324,10 +326,11 @@ static void loop() {
     }
 
     static uint32_t before = 0;
+    uint32_t now = 0;
 
-    cli();
-    uint32_t now = s_time_ms; // atomic
-    sei();
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+        now = s_time_ms; // atomic
+    }
 
     // conflicts with SPI
 //    if (now >= before + 1000) {

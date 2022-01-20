@@ -7,6 +7,11 @@ EXECUTABLE=main
 
 all: $(SOURCES) $(EXECUTABLE).hex $(EXECUTABLE).eep
 
+.PHONY: rebuild
+# rebuild: CFLAGS=-Wall
+rebuild: clean
+rebuild: all
+
 .PHONY: update
 update: all update_main.bin update_write.bin update_boot.bin
 
@@ -49,27 +54,27 @@ flash: all
 
 .PHONY: chip_erase
 chip_erase:
-	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -e
+	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B $(PRG_SPEED) -e
 
 
 .PHONY: erase_eep
 erase_eep:
-	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -U eeprom:w:_empty.eep:i
+	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B $(PRG_SPEED) -U eeprom:w:_empty.eep:i
 
 
 .PHONY: dump_flash
-dump:
-	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -U flash:r:dump.hex:i
+dump_flash:
+	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B $(PRG_SPEED) -U flash:r:dump.hex:i
 
 
 .PHONY: dump_eep
 dump_eep:
-	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -U eeprom:r:dump.eep:i
+	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B $(PRG_SPEED) -U eeprom:r:dump.eep:i
 
 
 .PHONY: dump_fuses
 dump_fuse:
-	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B 1MHz -U lfuse:r:-:i -U hfuse:r:-:i -U efuse:r:-:i -U lock:r:-:i
+	avrdude -c $(PROGRAMMER) -p $(MCU_DUDE) -B $(PRG_SPEED) -U lfuse:r:-:i -U hfuse:r:-:i -U efuse:r:-:i -U lock:r:-:i
 
 
 .PHONY: serial
