@@ -1,3 +1,4 @@
+/* derived from /avr/lib/ldscripts/avr5.xn */
 /* Script for -n */
 /* Copyright (C) 2014-2021 Free Software Foundation, Inc.
    Copying and distribution of this script, with or without modification,
@@ -82,10 +83,10 @@ SECTIONS
   .rel.plt       : { *(.rel.plt)        }
   .rela.plt      : { *(.rela.plt)        }
   /* Internal text space or external memory.  */
-  .text   :
+  .text 0x7C00 :
   {
     *(.vectors)
-    KEEP(*(.vectors))
+    /* KEEP(*(.vectors)) */
     /* For data that needs to reside in the lower 64k of progmem.  */
     *(.progmem.gcc*)
     /* PR 13812: Placing the trampolines here gives a better chance
@@ -133,7 +134,7 @@ SECTIONS
     *(.init8)
     KEEP (*(.init8))
     *(.init9)  /* Call main().  */
-    KEEP (*(.init9))
+    /* KEEP (*(.init9)) */
     *(.text)
     . = ALIGN(2);
     *(.text.*)
@@ -157,7 +158,7 @@ SECTIONS
     *(.fini1)
     KEEP (*(.fini1))
     *(.fini0)  /* Infinite loop after program termination.  */
-    KEEP (*(.fini0))
+    /* KEEP (*(.fini0)) */
     /* For code that needs not to reside in the lower progmem.  */
     *(.hightext)
     *(.hightext*)
@@ -169,6 +170,17 @@ SECTIONS
     *(.jumptables*)
     _etext = . ;
   }  > text
+  .boot_guard 0x7F7E : {
+    *(.boot_guard)
+    KEEP(*(.boot_guard))
+  }
+  .write 0x7F80 : {
+    *(.write)
+  }
+  .write_guard 0x7FFE : {
+    *(.write_guard)
+    KEEP(*(.write_guard))
+  }
   .data          :
   {
      PROVIDE (__data_start = .) ;

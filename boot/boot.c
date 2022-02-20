@@ -132,7 +132,7 @@ LOCKBITS = LOCKFUSE;
 
 // naked: no entry and exit code (no stack)
 void wdt_init(void) __attribute__((naked, section(".init3")));
-void main(void) __attribute__((OS_main, section(".init9")));
+void boot_main(void) __attribute__((OS_main, section(".init8")));
 
 
 
@@ -284,7 +284,7 @@ void wdt_init() {
 
 
 
-void main() {
+void boot_main() {
     uint8_t err;
     DDRB = _BV(PB5);
 

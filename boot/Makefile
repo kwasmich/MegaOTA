@@ -1,7 +1,7 @@
 #include ../Makefile.config
 include ../Makefile.common
 
-LDFLAGS += -nostartfiles
+LDFLAGS += -T boot.ld
 
 
 SOURCES = boot.c \
@@ -20,8 +20,14 @@ EXECUTABLE = boot
 all: $(SOURCES) $(EXECUTABLE).hex $(EXECUTABLE).eep
 
 
+.PHONY: rebuild
+# rebuild: CFLAGS=-Wall
+rebuild: clean
+rebuild: all
+
+
 $(EXECUTABLE).elf: $(OBJECTS)
-	$(CC) $(CFLAGS) $(LDFLAGS) -Wl,--section-start=.text=$(BOOT_START) -o $@ $^
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
 
 
 $(EXECUTABLE).hex: $(EXECUTABLE).elf

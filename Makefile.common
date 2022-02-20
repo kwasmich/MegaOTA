@@ -31,24 +31,26 @@ CFLAGS += -ffunction-sections -fdata-sections -fshort-enums \
             -DLOCKFUSE=$(LOCKFUSE)
 LDFLAGS += -Wl,--gc-sections \
 			-Wl,--print-gc-sections \
-			-Wl,--undefined=boot_version \
-			-Wl,--undefined=boot_ota_version \
-			-Wl,--undefined=main_version \
-			-Wl,--undefined=main_ota_version \
-			-Wl,--undefined=write_version \
-			-Wl,--undefined=write_ota_version \
-			-Wl,--section-start=.main=$(MAIN_START) \
-			-Wl,--section-start=.main_guard=$(MAIN_END) \
-			-Wl,--section-start=.main_ota=$(MAIN_OTA_START) \
-			-Wl,--section-start=.main_ota_guard=$(MAIN_OTA_END) \
-			-Wl,--section-start=.write_ota=$(WRITE_OTA_START) \
-			-Wl,--section-start=.write_ota_guard=$(WRITE_OTA_END) \
-			-Wl,--section-start=.boot_ota=$(BOOT_OTA_START) \
-			-Wl,--section-start=.boot_ota_guard=$(BOOT_OTA_END) \
-			-Wl,--section-start=.boot=$(BOOT_START) \
-			-Wl,--section-start=.boot_guard=$(BOOT_END) \
-			-Wl,--section-start=.write=$(WRITE_START) \
-			-Wl,--section-start=.write_guard=$(WRITE_END)
+            -Wl,--verbose
+
+#            -Wl,--undefined=boot_version \
+#            -Wl,--undefined=boot_ota_version \
+#            -Wl,--undefined=main_version \
+#            -Wl,--undefined=main_ota_version \
+#            -Wl,--undefined=write_version \
+#            -Wl,--undefined=write_ota_version \
+#            -Wl,--section-start=.main=$(MAIN_START) \
+#            -Wl,--section-start=.main_guard=$(MAIN_END) \
+#            -Wl,--section-start=.main_ota=$(MAIN_OTA_START) \
+#            -Wl,--section-start=.main_ota_guard=$(MAIN_OTA_END) \
+#            -Wl,--section-start=.write_ota=$(WRITE_OTA_START) \
+#            -Wl,--section-start=.write_ota_guard=$(WRITE_OTA_END) \
+#            -Wl,--section-start=.boot_ota=$(BOOT_OTA_START) \
+#            -Wl,--section-start=.boot_ota_guard=$(BOOT_OTA_END) \
+#            -Wl,--section-start=.boot=$(BOOT_START) \
+#            -Wl,--section-start=.boot_guard=$(BOOT_END) \
+#            -Wl,--section-start=.write=$(WRITE_START) \
+#            -Wl,--section-start=.write_guard=$(WRITE_END) \
 
 # link time optimization requires everything that is supposed to stay being flagged with __attribute__((used))
 # CFLAGS += -flto
