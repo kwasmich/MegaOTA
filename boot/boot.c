@@ -10,7 +10,6 @@
 #include "config.h"
 #include "macros.h"
 #include "update.h"
-void update_write_page(const update_page_t * const update_block);               // override section attribute
 //#include "crypto/crc.h"
 
 #ifdef EXTERNAL_MEMORY

@@ -1,8 +1,8 @@
 #include ../Makefile.config
 include ../Makefile.common
 
-LDFLAGS += -T boot.ld
-
+#CFLAGS += -DBOOTLOADER
+LDFLAGS += -T boot.ld -Wl,-Map=boot.map
 
 SOURCES = boot.c \
 		../shared/crypto/crc.c \
@@ -17,6 +17,9 @@ OBJECTS = $(SOURCES:%.c=%.o)
 DEPS    = $(SOURCES:%.c=%.d)
 EXECUTABLE = boot
 
+SOURCES_S = ../sections.s
+OBJECTS_S = $(SOURCES_S:%.s=%.o)
+
 all: $(SOURCES) $(EXECUTABLE).hex $(EXECUTABLE).eep
 
 
@@ -26,12 +29,12 @@ rebuild: clean
 rebuild: all
 
 
-$(EXECUTABLE).elf: $(OBJECTS)
+$(EXECUTABLE).elf: $(OBJECTS) $(OBJECTS_S)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
 
 
 $(EXECUTABLE).hex: $(EXECUTABLE).elf
-	$(OBJCOPY) -j .text -j .data -j .boot_guard -O ihex $< $@
+	$(OBJCOPY) -j .text -j .boot_version -j .write  -j .write_version -j .data -O ihex $< $@
 	$(AVRSIZE) $<
 
 
@@ -43,6 +46,10 @@ $(EXECUTABLE).eep: $(EXECUTABLE).elf
 	$(CC) $(CFLAGS) -o $@ -c $<
 # $(CC) $(CFLAGS) -S -o $@.s -c $<
 # $(CC) $(CFLAGS) -E -o $@.pre -c $<
+
+
+%.o: %.s
+	$(CC) $(CFLAGS) -o $@ -c $<
 
 
 .PHONY: flash

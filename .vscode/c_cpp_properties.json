@@ -1,0 +1,88 @@
+{
+    "configurations": [
+        {
+            "name": "Mac",
+            "includePath": [
+                "${workspaceFolder}",
+                "${workspaceFolder}/shared",
+                "/opt/local/avr/include"
+            ],
+            "defines": [
+                "__AVR_ATmega328P__",
+                "F_CPU=8000000UL",
+                "ADDR_MAIN_START=0x0000",
+                "ADDR_MAIN_END=0x3BFE",
+                "ADDR_MAIN_OTA_START=0x3C00",
+                "ADDR_MAIN_OTA_END=0x77FE",
+                "ADDR_BOOT_OTA_START=0x7800",
+                "ADDR_BOOT_OTA_END=0x7B7E",
+                "ADDR_WRITE_OTA_START=0x7B80",
+                "ADDR_WRITE_OTA_END=0x7BFE",
+                "ADDR_BOOT_START=0x7C00",
+                "ADDR_BOOT_END=0x7F7E",
+                "ADDR_WRITE_START=0x7F80",
+                "ADDR_WRITE_END=0x7FFE",
+                "FLASH_END=0x8000",
+                "LFUSE=0xE2",
+                "HFUSE=0xD4",
+                "EFUSE=0xFF",
+                "LOCKFUSE=0xFF"
+            ],
+            "intelliSenseMode": "clang-x64",
+            "browse": {
+                "path": [
+                    "${workspaceFolder}",
+                    "${workspaceFolder}/shared",
+                    "/opt/local/avr/include"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""
+            },
+            "macFrameworkPath": [],
+            "compilerPath": "/usr/bin/clang",
+            "cStandard": "c11",
+            "cppStandard": "c++17"
+        },
+        {
+            "name": "Linux",
+            "includePath": [
+                "/usr/include",
+                "/usr/local/include",
+                "${workspaceFolder}"
+            ],
+            "defines": [],
+            "intelliSenseMode": "clang-x64",
+            "browse": {
+                "path": [
+                    "/usr/include",
+                    "/usr/local/include",
+                    "${workspaceFolder}"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""
+            }
+        },
+        {
+            "name": "Win32",
+            "includePath": [
+                "C:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/include",
+                "${workspaceFolder}"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "intelliSenseMode": "msvc-x64",
+            "browse": {
+                "path": [
+                    "C:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/include/*",
+                    "${workspaceFolder}"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""
+            }
+        }
+    ],
+    "version": 4
+}

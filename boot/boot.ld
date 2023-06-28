@@ -13,7 +13,7 @@ __FUSE_REGION_LENGTH__ = DEFINED(__FUSE_REGION_LENGTH__) ? __FUSE_REGION_LENGTH_
 __LOCK_REGION_LENGTH__ = DEFINED(__LOCK_REGION_LENGTH__) ? __LOCK_REGION_LENGTH__ : 1K;
 __SIGNATURE_REGION_LENGTH__ = DEFINED(__SIGNATURE_REGION_LENGTH__) ? __SIGNATURE_REGION_LENGTH__ : 1K;
 __USER_SIGNATURE_REGION_LENGTH__ = DEFINED(__USER_SIGNATURE_REGION_LENGTH__) ? __USER_SIGNATURE_REGION_LENGTH__ : 1K;
-MEMORY
+MEMORY	
 {
   text   (rx)   : ORIGIN = 0, LENGTH = __TEXT_REGION_LENGTH__
   data   (rw!x) : ORIGIN = 0x800060, LENGTH = __DATA_REGION_LENGTH__
@@ -83,7 +83,7 @@ SECTIONS
   .rel.plt       : { *(.rel.plt)        }
   .rela.plt      : { *(.rela.plt)        }
   /* Internal text space or external memory.  */
-  .text 0x7C00 :
+  .text __BOOT_START__ :
   {
     *(.vectors)
     /* KEEP(*(.vectors)) */
@@ -170,16 +170,19 @@ SECTIONS
     *(.jumptables*)
     _etext = . ;
   }  > text
-  .boot_guard 0x7F7E : {
-    *(.boot_guard)
-    KEEP(*(.boot_guard))
+  .boot_version 0x7F7E : {
+    PROVIDE (__boot_version = .) ;
+    *(.boot_version)
+    KEEP(*(.boot_version))
   }
   .write 0x7F80 : {
+    PROVIDE (__write = .) ;
     *(.write)
   }
-  .write_guard 0x7FFE : {
-    *(.write_guard)
-    KEEP(*(.write_guard))
+  .write_version 0x7FFE : {
+    PROVIDE (__write_version = .) ;
+    *(.write_version)
+    KEEP(*(.write_version))
   }
   .data          :
   {
