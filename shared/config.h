@@ -58,5 +58,5 @@
 //#define NRF24_
 
 //#define NRF24_ROLE_COORDINATOR
-#define NRF24_ROLE_ROUTER
+//#define NRF24_ROLE_ROUTER
 //#define NRF24_ROLE_END_POINT

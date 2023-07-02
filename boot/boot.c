@@ -284,77 +284,77 @@ void wdt_init() {
 
 
 void boot_main() {
-    uint8_t err;
-    DDRB = _BV(PB5);
+//     uint8_t err;
+//     DDRB = _BV(PB5);
 
-    Update_t up;
-    eeprom_read_block(&up, (void *)ADDR_EE_UPDATE, sizeof(up));
+//     Update_t up;
+//     eeprom_read_block(&up, (void *)ADDR_EE_UPDATE, sizeof(up));
 
-    if (up.prog_update) {                                                       // there seems to be an update available
-        eeprom_update_byte((uint8_t *)ADDR_EE_UPDATE + offsetof(Update_t, prog_update), 0);
-        eeprom_busy_wait();
+//     if (up.prog_update) {                                                       // there seems to be an update available
+//         eeprom_update_byte((uint8_t *)ADDR_EE_UPDATE + offsetof(Update_t, prog_update), 0);
+//         eeprom_busy_wait();
 
-        if (!isSignatureMatching(&up)) {                                        // signature mismatch
-            err = 2;
-            goto error;
-        }
+//         if (!isSignatureMatching(&up)) {                                        // signature mismatch
+//             err = 2;
+//             goto error;
+//         }
 
-        if (!areFusesMatching(&up)) {                                           // fuse mismatch
-            err = 4;
-            goto error;
-        }
+//         if (!areFusesMatching(&up)) {                                           // fuse mismatch
+//             err = 4;
+//             goto error;
+//         }
 
-#ifdef EXTERNAL_MEMORY
-#   if EXTERNAL_MEMORY == EXTERNAL_MEMORY_I2C
-        i2c_init();
-#   elif EXTERNAL_MEMORY == EXTERNAL_MEMORY_SPI
-        spi_init();
-        spi_eeprom_init();
-#   else
-#       error not implemented
-#   endif
-#endif
+// #ifdef EXTERNAL_MEMORY
+// #   if EXTERNAL_MEMORY == EXTERNAL_MEMORY_I2C
+//         i2c_init();
+// #   elif EXTERNAL_MEMORY == EXTERNAL_MEMORY_SPI
+//         spi_init();
+//         spi_eeprom_init();
+// #   else
+// #       error not implemented
+// #   endif
+// #endif
 
-        if (!isCRCMatching(ADDR_MAIN_OTA_START, NUM_MAIN_PAGES, up.main_crc)) {   // crc mismatch
-            err = 6;
-            goto error;
-        }
+//         if (!isCRCMatching(ADDR_MAIN_OTA_START, NUM_MAIN_PAGES, up.main_crc)) {   // crc mismatch
+//             err = 6;
+//             goto error;
+//         }
 
-        if (!isCRCMatching(ADDR_WRITE_OTA_START, NUM_WRITE_PAGES, up.write_crc)) {// crc mismatch
-            err = 8;
-            goto error;
-        }
+//         if (!isCRCMatching(ADDR_WRITE_OTA_START, NUM_WRITE_PAGES, up.write_crc)) {// crc mismatch
+//             err = 8;
+//             goto error;
+//         }
 
-        // update
-        update(ADDR_MAIN_START, ADDR_MAIN_OTA_START, NUM_MAIN_PAGES);
-        update(ADDR_WRITE_START, ADDR_WRITE_OTA_START, NUM_WRITE_PAGES);
-        wdt_soft_reset();
-    }
+//         // update
+//         update(ADDR_MAIN_START, ADDR_MAIN_OTA_START, NUM_MAIN_PAGES);
+//         update(ADDR_WRITE_START, ADDR_WRITE_OTA_START, NUM_WRITE_PAGES);
+//         wdt_soft_reset();
+//     }
 
-    BIT_TGL(PORTB, _BV(PB5));
-    _delay_ms(500);
+//     BIT_TGL(PORTB, _BV(PB5));
+//     _delay_ms(500);
 
-    for (uint8_t i = 0; i < 20; i++) {
-        BIT_TGL(PORTB, _BV(PB5));
-        _delay_ms(50);
-    }
+//     for (uint8_t i = 0; i < 20; i++) {
+//         BIT_TGL(PORTB, _BV(PB5));
+//         _delay_ms(50);
+//     }
 
-    _delay_ms(450);
-    BIT_TGL(PORTB, _BV(PB5));
-    _delay_ms(500);
-    DDRB = 0;
+//     _delay_ms(450);
+//     BIT_TGL(PORTB, _BV(PB5));
+//     _delay_ms(500);
+//     DDRB = 0;
 
 start:
     __asm__ volatile("jmp 0x0000");
 
-error:
-    while (true) {
-        for (uint8_t i = 0; i < err; i++) {
-            BIT_TGL(PORTB, _BV(PB5));
-            _delay_ms(500);
-        }
-        _delay_ms(5000);
-    }
-    return;
+// error:
+//     while (true) {
+//         for (uint8_t i = 0; i < err; i++) {
+//             BIT_TGL(PORTB, _BV(PB5));
+//             _delay_ms(500);
+//         }
+//         _delay_ms(5000);
+//     }
+//     return;
 }
 

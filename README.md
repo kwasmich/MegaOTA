@@ -49,7 +49,8 @@ dump MCU fuse
 
 
 
-source ../base_config.sh
+export $(grep -v '^#' .env | xargs)
+cd main
 make -C ../boot clean && make -C ../boot
 make clean && make && make update
 make -C ../updater clean && make -C ../updater
