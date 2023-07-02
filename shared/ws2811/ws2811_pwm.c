@@ -35,7 +35,7 @@ void ws2811_deinit() {
 
 
 
-void ws2811_commit_pwm(const uint8_t *values, uint8_t size) {
+void ws2811_send_pwm(const uint8_t *values, uint8_t size) {
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
         uint8_t bitcount = 7;
         uint8_t start = _BV2(WGM02, CS00);
@@ -94,7 +94,7 @@ void ws2811_commit_pwm(const uint8_t *values, uint8_t size) {
                     [ocrxb]   "M" (&OCR0B)                 // The port to use setting duty cycle
                     );
 
-        _delay_loop_2(1000);    // reset delay is 0.5ms = 1000 * CPU cycles @ 8MHz
+        // _delay_loop_2(1000);    // reset delay is 0.5ms = 1000 * CPU cycles @ 8MHz
     }
 }
 

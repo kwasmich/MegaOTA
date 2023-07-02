@@ -20,9 +20,10 @@
 
 void ws2811_init(void);
 void ws2811_deinit(void);
+void ws2811_commit(void);
 
-void ws2811_commit_bitbang(const uint8_t *values, uint8_t size, uint8_t bit);
-void ws2811_commit_pwm(const uint8_t *values, uint8_t size);
+void ws2811_send_bitbang(const uint8_t *values, uint8_t size, uint8_t bit);
+void ws2811_send_pwm(const uint8_t *values, uint8_t size);
 
 
 #endif /* ws2811_h */

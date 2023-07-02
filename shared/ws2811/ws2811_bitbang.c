@@ -21,7 +21,7 @@
 
 
 
-void ws2811_commit_bitbang(const uint8_t *values, uint8_t size, uint8_t bit) {
+void ws2811_send_bitbang(const uint8_t *values, uint8_t size, uint8_t bit) {
     uint8_t bitcount = 6;
     const uint8_t dn = WS2811_PORT & (~_BV(bit));
     const uint8_t up = WS2811_PORT | _BV(bit);

@@ -23,6 +23,8 @@
 #include "lcd/lcd.h"
 #include "crypto/entropy.h"
 #include "time/time.h"
+#include "ws2811/ws2811.h"
+#include "color/color.h"
 
 
 #include <avr/boot.h>
@@ -40,6 +42,14 @@
 #include <string.h>
 #include <util/atomic.h>
 #include <util/delay.h>
+
+
+#define WS2811_PORT PORTB
+#define WS2811_LED_COUNT 142
+#define WS2811_LED_STEP (0xFFFFUL / WS2811_LED_COUNT)
+
+#define ws2811_send(X, Y) ws2811_send_pwm(X, Y)
+
 
 
 
@@ -72,14 +82,14 @@ void update_print_page(const update_page_t * const ublock) {
 
 
 static void setup() {
-    clock_prescale_set(clock_div_2);                                            // simulate 8MHz device
+    // clock_prescale_set(clock_div_2);                                            // simulate 8MHz device
     power_all_disable();                                                        // disable all components to save power - enable as required
 
     DDRB = _BV(PB5);
 
     uart_init_async(0x00);
     puts("SETUP...");
-    spi_init();
+    // spi_init();
     // nrf24_init();
 
 #ifdef NRF24_ROLE_COORDINATOR
@@ -93,6 +103,8 @@ static void setup() {
 
 //    lcd_init();
     time_init();
+    ws2811_init();
+
     sei();
 
     puts("READY");
@@ -326,6 +338,7 @@ static void loop() {
     }
 
     static uint32_t before = 0;
+    static uint32_t before_ws2811 = 0;
     uint32_t now = 0;
 
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
@@ -333,11 +346,25 @@ static void loop() {
     }
 
     // conflicts with SPI
-//    if (now >= before + 1000) {
-//        before += 1000;
-//        BIT_TGL(PORTB, _BV(PB5));
-//    }
+    if (now >= before + 200) {
+        before += 200;
+        BIT_TGL(PORTB, _BV(PB5));
+    }
 
+    if (now >= before_ws2811 + 100) {
+        before_ws2811 += 100;
+        static rgb8_t data[WS2811_LED_COUNT];
+        static uint16_t h = 0;
+        h += 100;
+
+        for (uint8_t i = 0; i < WS2811_LED_COUNT; i++) {
+            data[i] = hsv2rgb(h + WS2811_LED_STEP * i, 255, 127);
+        }
+
+        ws2811_send(&data[0], 3 * 71);
+        ws2811_send(&data[71], 3 * 71);
+        ws2811_commit();
+    }
 
 //    BIT_SET(PORTB, _BV(PB5));
 //    _delay_ms(10);
