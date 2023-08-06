@@ -1,5 +1,3 @@
-#include ../Makefile.config
-
 PORT=`find /dev/cu.wchusbserial* /dev/cu.usbserial* /dev/cu.usbmodem* -print -quit`
 
 

@@ -1,4 +1,3 @@
-#include ../Makefile.config
 include ../Makefile.common
 
 #CFLAGS += -DBOOTLOADER
